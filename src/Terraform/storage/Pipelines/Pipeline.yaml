@@ -1,0 +1,40 @@
+parameters:
+- name: versionOption
+  type: string
+  default: patch
+  displayName: 'The semantic version type (major, minor, or patch)'
+
+name: layer-storage-$(Date:yyyyMMdd).$(Rev:rr)
+
+trigger:
+  branches:
+    include:
+    - main
+    - master
+
+  paths:
+    include:
+      - /Modules/Terraform/storage
+      - /Modules/Terraform/.global/*
+    exclude: 
+      - /**/*.md
+      - /.attachments
+
+variables:
+  - name: system.debug 
+    value: true
+  - name: downloadPath
+    value: $(Build.ArtifactStagingDirectory)
+  - name: layerName
+    value: storage
+
+pool: IaCS Scale Set Linux
+
+steps:
+- template: /Modules/Terraform/.global/PipelineLibrary/Version.yaml
+  parameters:
+    layerName: ${{ variables.layerName}}
+    versionOption: ${{ parameters.versionOption }}
+        # this variable will be instantiated from an upstream pipeline named manual-version-layers
+        # at https://dev.azure.com/StratumKit/Stratum/_build?definitionId=430&_a=summary
+    triggerPipelineVersionOption: "$(triggerPipelineVersionOption)"
