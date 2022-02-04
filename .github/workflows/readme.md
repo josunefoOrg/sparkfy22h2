@@ -1,1 +1,11 @@
-asasdas
+## RGs
+
+SPARKFY22H2-ARM
+SPARKFY22H2-Bicep
+SPARKFY22H2-TF
+
+
+## Subscription ID
+
+ed29c799-3b06-4306-971a-202c3c2d29a9
+
