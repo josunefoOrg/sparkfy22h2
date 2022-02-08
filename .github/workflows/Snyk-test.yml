@@ -1,3 +1,10 @@
+name: "ARM Snyk test Workflow"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, users/**]
+    
 jobs:
   contract_test:
     runs-on: ubuntu-latest
