@@ -4,8 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main, users/**]
-    paths:
-      - "*"
+
 jobs:
   build_source_code_dev:
     environment: "Dev"
@@ -24,7 +23,9 @@ jobs:
       - name: ARM-TTK
         uses: venura9/arm-ttk@1.0
         with:
-          path: ./src/ARM/
+          path: ./src/ARM/*/
+          file: deploy.json
+
       - name: "Deploy Key Vault"
         id: kv
         uses: azure/arm-deploy@v1
