@@ -27,4 +27,5 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
+          file: ./src/ARM/KeyVault/deploy.json
           args: --rules=bundle.tar.gz
