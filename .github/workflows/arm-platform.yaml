@@ -14,10 +14,6 @@ jobs:
     runs-on: windows-2022
     name: "Deploy Infrastructure DEV"
     if: ${{ github.ref != 'refs/heads/main' }}
-    variables:
-    - name: "RG"
-      value: "SPARKFY22H2-ARM"
-
     steps:
       - name: "Checkout"
         uses: actions/checkout@v2
@@ -53,7 +49,7 @@ jobs:
         uses: azure/arm-deploy@v1
         with:
           subscriptionId: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-          resourceGroupName: $(RG)
+          resourceGroupName: "SPARKFY22H2-ARM"
           template: ./src/ARM/StorageAccounts/deploy.json
           parameters: ./src/ARM/StorageAccounts/parameters/parameters.json
       - name: "Deploy Azure Security Center"
@@ -61,7 +57,7 @@ jobs:
         uses: azure/arm-deploy@v1
         with:
           subscriptionId: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-          resourceGroupName: $(RG)
+          resourceGroupName: "SPARKFY22H2-ARM"
           template: ./src/ARM/AzureSecurityCenter/deploy.json
           parameters: ./src/ARM/AzureSecurityCenter/parameters/parameters.json
       - name: "Deploy Web Application"
@@ -69,7 +65,7 @@ jobs:
         uses: azure/arm-deploy@v1
         with:
           subscriptionId: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-          resourceGroupName: $(RG)
+          resourceGroupName: "SPARKFY22H2-ARM"
           template: ./src/ARM/WebApp/deploy.json
           parameters: ./src/ARM/WebApp/parameters/parameters.json
       - name: "Deploy Cognitive Services"
@@ -77,6 +73,6 @@ jobs:
         uses: azure/arm-deploy@v1
         with:
           subscriptionId: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-          resourceGroupName: $(RG)
+          resourceGroupName: "SPARKFY22H2-ARM"
           template: ./src/ARM/CognitiveServices/deploy.json
           parameters: ./src/ARM/CognitiveServices/parameters/parameters.json
