@@ -5,15 +5,14 @@ on:
   push:
     branches: [main, users/**]
     paths:
-      - "platform/**"
-      - ".github/workflows/platform.yml"
+      - "src/**"
+      - ".github/workflows/arm-platform.yml"
 
 jobs:
   build_source_code_dev:
     environment: "Dev"
     runs-on: windows-2022
     name: "Deploy Infrastructure DEV"
-    if: ${{ github.ref != 'refs/heads/main' }}
     steps:
       - name: "Checkout"
         uses: actions/checkout@v2
