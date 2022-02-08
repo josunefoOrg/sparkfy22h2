@@ -23,17 +23,10 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
-      - name: "Test Templates"
-        id: armTestToolkit
-        shell: pwsh
-        run: |
-          Import-Module ./toolkits/armtemplatetoolkit/arm-ttk/arm-ttk.psd1
-          Test-AzTemplate -TemplatePath ./src/ARM/KeyVault/deploy.json
-          Test-AzTemplate -TemplatePath ./src/ARM/StorageAccounts/deploy.json
-          Test-AzTemplate -TemplatePath ./src/ARM/AzureSecurityCenter/deploy.json
-          Test-AzTemplate -TemplatePath ./src/ARM/WebApp/deploy.json
-          Test-AzTemplate -TemplatePath ./src/ARM/CognitiveServices/deploy.json
-
+      - name: ARM-TTK
+        uses: venura9/arm-ttk@1.0
+        with:
+          path: /src/ARM/KeyVault/deploy.json
       - name: "Deploy Key Vault"
         id: kv
         uses: azure/arm-deploy@v1
