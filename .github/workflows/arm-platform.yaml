@@ -5,9 +5,7 @@ on:
   push:
     branches: [main, users/**]
     paths:
-      - "src/**"
-      - ".github/workflows/arm-platform.yml"
-
+      - "*"
 jobs:
   build_source_code_dev:
     environment: "Dev"
