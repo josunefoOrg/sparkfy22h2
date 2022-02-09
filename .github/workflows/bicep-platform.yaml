@@ -27,11 +27,18 @@ jobs:
           template: ./src/Bicep/vaults/deploy.bicep
           failOnStdErr: false
 
-      - name: ARM-TTK - keyvault
-        uses: venura9/arm-ttk@1.0
-        continue-on-error: false
+      - name: Test ARM Templates - files
+        id: filestest
+        uses: aliencube/arm-ttk-actions@v0.3
         with:
-          path: ./src/Bicep/vaults/deploy.json
+          path: ./src/Bicep/vaults
+          files: deploy.json
+
+      - name: Test result - files
+        shell: bash
+        continue-on-error: false
+        run: |
+          echo "${{ toJSON(fromJSON(steps.filestest.outputs.results)) }}"
 
       - name: SNYK - Run Snyk to check key vault ARM template file for issues
         uses: snyk/actions/iac@master
