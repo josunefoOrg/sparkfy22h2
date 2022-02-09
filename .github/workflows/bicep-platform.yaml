@@ -29,6 +29,13 @@ jobs:
           template: ./src/Bicep/vaults/deploy.bicep
           failOnStdErr: false
 
+      - name: SNYK - Run Snyk to check key vault ARM template file for issues
+        uses: snyk/actions/iac@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          file: ./src/Bicep/vaults/deploy.json
+
       - name: "arm-ttk module install"
         id: arm-ttk
         shell: pwsh
@@ -37,11 +44,3 @@ jobs:
           Expand-Archive .\arm-ttk.2022.01.21.zip
           Import-Module ./arm-ttk.2022.01.21/arm-ttk/arm-ttk.psd1 -Force
           Test-AzTemplate -TemplatePath ./src/Bicep/vaults/deploy.json
-
-      - name: SNYK - Run Snyk to check key vault ARM template file for issues
-        uses: snyk/actions/iac@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          file: ./src/Bicep/vaults/deploy.json
-
