@@ -28,8 +28,7 @@ jobs:
           failOnStdErr: false
 
       - name: ARM-TTK - keyvault
-        uses: venura9/arm-ttk@1.0
-        continue-on-error: false
+        uses: aliencube/arm-ttk-actions@v0.3
         with:
           path: ./src/Bicep/vaults/deploy.json
 
