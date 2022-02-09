@@ -29,6 +29,7 @@ jobs:
 
       - name: ARM-TTK - keyvault
         uses: venura9/arm-ttk@1.0
+        continue-on-error: false
         with:
           path: ./src/Bicep/vaults/deploy.json
 
