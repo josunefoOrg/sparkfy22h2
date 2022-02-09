@@ -19,16 +19,18 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
+
       - name: ARM-TTK - keyvault
         uses: venura9/arm-ttk@1.0
         with:
-          path: ./src/ARM/KeyVault/deploy.json
+          path: ./src/ARM/*
+
       - name: SNYK - Run Snyk to check key vault ARM template file for issues
         uses: snyk/actions/iac@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          file: .github/workflows/arm-platform.yaml
+          file: ./src/ARM/AzureSecurityService/deploy.json
 
       - name: ARM-TTK- StorageAccounts
         uses: venura9/arm-ttk@1.0
