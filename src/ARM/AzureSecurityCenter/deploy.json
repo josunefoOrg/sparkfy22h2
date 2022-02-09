@@ -166,7 +166,7 @@
         {
             "name": "default",
             "type": "Microsoft.Security/autoProvisioningSettings",
-            "apiVersion": "2017-08-01-preview",
+            "apiVersion": "2019-01-01",
             "properties": {
                 "autoProvision": "[parameters('autoProvision')]"
             }
@@ -282,7 +282,7 @@
         {
             "name": "default1",
             "type": "Microsoft.Security/securityContacts",
-            "apiVersion": "2017-08-01-preview",
+            "apiVersion": "2020-01-01-preview",
             "condition": "[not(empty(parameters('securityContactProperties')))]",
             "properties": {
                 "email": "[parameters('securityContactProperties').email]",
@@ -294,7 +294,7 @@
         {
             "name": "default",
             "type": "Microsoft.Security/workspaceSettings",
-            "apiVersion": "2017-08-01-preview",
+            "apiVersion": "2019-01-01",
             "dependsOn": [
                 "Microsoft.Security/autoProvisioningSettings/default"
             ],
