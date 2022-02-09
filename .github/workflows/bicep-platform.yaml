@@ -9,7 +9,7 @@ on:
 jobs:
   build_source_code_dev:
     environment: "Dev"
-    runs-on: windows-2022
+    runs-on: ubuntu-latest
     name: "Deploy Infrastructure DEV"
     steps:
       - name: "Checkout"
