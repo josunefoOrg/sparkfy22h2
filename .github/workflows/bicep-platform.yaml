@@ -35,7 +35,7 @@ jobs:
         run: |
           Invoke-WebRequest -Uri "https://github.com/Azure/arm-ttk/releases/download/20220121/arm-ttk.2022.01.21.zip" -OutFile "arm-ttk.2022.01.21.zip"
           Expand-Archive .\arm-ttk.2022.01.21.zip
-          Import-Module ..\arm-ttk\arm-ttk.psd1 -Force
+          Import-Module ./arm-ttk.2022.01.21/arm-ttk/arm-ttk.psd1 -Force
           Test-AzTemplate -TemplatePath ./src/Bicep/vaults/deploy.json
 
       - name: SNYK - Run Snyk to check key vault ARM template file for issues
