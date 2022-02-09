@@ -4,10 +4,12 @@ on:
   workflow_dispatch:
   push:
     branches: [main, users/**]
+    paths:
+    - "src/Bicep/**"
 jobs:
   build_source_code_dev:
     environment: "Dev"
-    runs-on: ubuntu-latest
+    runs-on: windows-2022
     name: "Deploy Infrastructure DEV"
     steps:
       - name: "Checkout"
@@ -27,10 +29,14 @@ jobs:
           template: ./src/Bicep/vaults/deploy.bicep
           failOnStdErr: false
 
-      - name: ARM-TTK - keyvault
-        uses: aliencube/arm-ttk-actions@v0.3
-        with:
-          path: ./src/Bicep/vaults/deploy.json
+      - name: "arm-ttk module install"
+        id: arm-ttk
+        shell: pwsh
+        run: |
+          wget https://github.com/Azure/arm-ttk/releases/download/20220121/arm-ttk.2022.01.21.zip
+          unzip ./arm-ttk.2022.01.21.zip
+          Import-Module ..\arm-ttk\arm-ttk.psd1 -Force
+          Test-AzTemplate -TemplatePath ./src/Bicep/vaults/deploy.json
 
       - name: SNYK - Run Snyk to check key vault ARM template file for issues
         uses: snyk/actions/iac@master

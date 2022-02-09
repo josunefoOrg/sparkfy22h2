@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches: [main, users/**]
+    paths:
+    - "src/ARM/**"
 jobs:
   build_source_code_dev:
     environment: "Dev"

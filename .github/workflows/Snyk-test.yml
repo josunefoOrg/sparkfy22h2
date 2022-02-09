@@ -4,7 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches: [main, users/**]
-    
+    paths:
+    - "src/ARM/**"
 jobs:
   contract_test:
     runs-on: ubuntu-latest
