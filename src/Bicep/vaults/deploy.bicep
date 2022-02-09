@@ -1,6 +1,6 @@
 @description('Optional. Name of the Key Vault. If no name is provided, then unique name will be created.')
 @maxLength(24)
-param name string = ''
+param name string = 'jojo-spark-keyvault'
 
 @description('Optional. Location for all resources.')
 param location string = resourceGroup().location
