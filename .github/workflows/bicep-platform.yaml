@@ -20,12 +20,12 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
       - name: deploy
-          uses: azure/arm-deploy@v1
-          with:
-            subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
-            resourceGroupName: "SPARKFY22H2-BICEP"
-            template: ./src/Bicep/vaults/deploy.bicep
-            failOnStdErr: false
+        uses: azure/arm-deploy@v1
+        with:
+          subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
+          resourceGroupName: "SPARKFY22H2-BICEP"
+          template: ./src/Bicep/vaults/deploy.bicep
+          failOnStdErr: false
 
       - name: ARM-TTK - keyvault
         uses: venura9/arm-ttk@1.0
