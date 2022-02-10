@@ -254,8 +254,6 @@
         }
     },
     "variables": {
-        // SAS token validity calculation - DO NOT CHANGE THESE VALUES !
-
         "moduleName": "Storage Account",
         "maxNameLength": 24,
         "uniqueStoragenameUntrim": "[uniqueString(concat(variables('moduleName'),parameters('baseTime')))]",
@@ -263,10 +261,10 @@
         "storageAccountName": "[if(empty(parameters('storageAccountName')),variables('uniqueStoragename'),parameters('storageAccountName'))]",
 
         "accountSasProperties": {
-            "signedServices": "bt", //Blob (b), Queue (q), Table (t), File (f).
-            "signedPermission": "racuw", //Read (r), Write (w), Delete (d), List (l), Add (a), Create (c), Update (u) and Process (p)
-            "signedExpiry": "[dateTimeAdd(parameters('baseTime'), parameters('sasTokenValidityLength'))]", //format: 2017-05-24T10:42:03Z
-            "signedResourceTypes": "co", //Service (s): Access to service-level APIs; Container (c): Access to container-level APIs; Object (o): Access to object-level APIs for blobs, queue messages, table entities, and files.
+            "signedServices": "bt",
+            "signedPermission": "racuw",
+            "signedExpiry": "[dateTimeAdd(parameters('baseTime'), parameters('sasTokenValidityLength'))]",
+            "signedResourceTypes": "co",
             "signedProtocol": "https"
         },
         "virtualNetworkRules": {
@@ -287,9 +285,6 @@
             "ipRules": "[if(empty(parameters('networkAcls')), json('null'), if(equals(length(parameters('networkAcls').ipRules), 0), json('null'), parameters('networkAcls').ipRules))]"
         },
         "azureFilesIdentityBasedAuthentication": "[parameters('azureFilesIdentityBasedAuthentication')]",
-        // It was needed to decouple the Stroage Account Parameters to a variable, as this was the only option to keep not let the azureFilesIdentityBasedAuthentication
-        // configuration changed back to null, when not providing a corresponding input parameter. With other word, using the json('null') expression in the body
-        // of the Storage Account's properties block did not achieve the desired results.
         "saBaseProperties": {
             "encryption": {
                 "keySource": "Microsoft.Storage",
@@ -486,7 +481,6 @@
         }
     },
     "resources": [
-        // cuaId
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2020-06-01",
@@ -502,7 +496,6 @@
                 }
             }
         },
-        // storage account
         {
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2019-06-01",
@@ -517,9 +510,6 @@
                 "userAssignedIdentities": "[if(empty(parameters('userAssignedIdentities')),json('null'),parameters('userAssignedIdentities') )]"
             },
             "tags": "[parameters('tags')]",
-            // It was needed to decouple the Storage Account Parameters to a variable, as this was the only option to keep not let the azureFilesIdentityBasedAuthentication
-            // configuration changed back to null, when not providing a corresponding input parameter. With other word, using the json('null') expression in the body
-            // of the Storage Account's properties block did not achieve the desired results.
             "properties": "[variables('saProperties')]",
             "resources": [
                 {
@@ -537,7 +527,6 @@
                 }
             ]
         },
-        // private endpoints
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2020-06-01",
@@ -650,7 +639,6 @@
                 }
             }
         },
-        // storage account RBAC
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2020-06-01",
@@ -713,7 +701,6 @@
                 }
             }
         },
-        // blob services
         {
 
             "type": "Microsoft.Storage/storageAccounts/blobServices",
@@ -731,7 +718,6 @@
                 "automaticSnapshotPolicyEnabled": "[parameters('automaticSnapshotPolicyEnabled')]"
             }
         },
-        // storage container
         {
             "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
             "apiVersion": "2019-06-01",
@@ -763,7 +749,6 @@
                 }
             ]
         },
-        // lifecycle policy
         {
             "type": "Microsoft.Storage/storageAccounts/managementPolicies",
             "apiVersion": "2019-06-01",
@@ -806,7 +791,6 @@
                 }
             }
         },
-        // storage container RBAC
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2020-06-01",
@@ -920,7 +904,6 @@
                 }
             }
         },
-        // file share
         {
             "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
             "apiVersion": "2019-06-01",
@@ -937,7 +920,6 @@
                 "shareQuota": "[parameters('fileShares')[copyIndex()].shareQuota]"
             }
         },
-        // file share RBAC
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2020-06-01",
@@ -1051,7 +1033,6 @@
                 }
             }
         },
-        // queue
         {
             "type": "Microsoft.Storage/storageAccounts/queueServices/queues",
             "apiVersion": "2019-06-01",
@@ -1068,7 +1049,6 @@
                 "metadata": "[if(contains(parameters('queues')[copyIndex()], 'metadata'), parameters('queues')[copyIndex()].metadata, json('null'))]"
             }
         },
-        // queue RBAC
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2020-06-01",
@@ -1182,7 +1162,6 @@
                 }
             }
         },
-        // table
         {
             "type": "Microsoft.Storage/storageAccounts/tableServices/tables",
             "apiVersion": "2019-06-01",
