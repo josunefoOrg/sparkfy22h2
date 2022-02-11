@@ -21,6 +21,29 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
+
+      - name: Bicep Build
+        uses: Azure-Samples/bicep-build-action@v1.0.0
+        with:
+          bicepFilePath: ./src/Bicep/vaults/deploy.bicep
+          outputFilePath: ./src/Bicep/vaults/azuredeploy.json
+
+      - name: "ARM - ttk module install and test Key vault"
+        id: arm-ttk
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/Azure/arm-ttk/releases/download/20220121/arm-ttk.2022.01.21.zip" -OutFile "arm-ttk.2022.01.21.zip"
+          Expand-Archive .\arm-ttk.2022.01.21.zip
+          Import-Module ./arm-ttk.2022.01.21/arm-ttk/arm-ttk.psd1 -Force
+          Test-AzTemplate -TemplatePath ./src/Bicep/vaults/azuredeploy.json
+
+      - name: SNYK - Run Snyk to check key vault ARM template file for issues
+        uses: snyk/actions/iac@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          file: ./src/Bicep/vaults/azuredeploy.json
+
       - name: deploy
         uses: azure/arm-deploy@v1
         with:
@@ -28,19 +51,3 @@ jobs:
           resourceGroupName: "SPARKFY22H2-BICEP"
           template: ./src/Bicep/vaults/deploy.bicep
           failOnStdErr: false
-
-      - name: SNYK - Run Snyk to check key vault ARM template file for issues
-        uses: snyk/actions/iac@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          file: ./src/Bicep/vaults/deploy.json
-
-      - name: "arm-ttk module install"
-        id: arm-ttk
-        shell: pwsh
-        run: |
-          Invoke-WebRequest -Uri "https://github.com/Azure/arm-ttk/releases/download/20220121/arm-ttk.2022.01.21.zip" -OutFile "arm-ttk.2022.01.21.zip"
-          Expand-Archive .\arm-ttk.2022.01.21.zip
-          Import-Module ./arm-ttk.2022.01.21/arm-ttk/arm-ttk.psd1 -Force
-          Test-AzTemplate -TemplatePath ./src/Bicep/vaults/deploy.json
