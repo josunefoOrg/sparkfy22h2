@@ -22,20 +22,37 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
 
-      - name: bicep-build-output
+      - name: bicep-build - Key vault
         uses: Azure/bicep-build-action@v1.0.0
         with:
           bicepFilePath: ./src/Bicep/vaults/deploy.bicep
           outputFilePath: ./src/Bicep/vaults/azuredeploy.json
 
-      - name: "ARM - ttk module install and test Key vault"
+      - name: bicep-build - Storage Account
+        uses: Azure/bicep-build-action@v1.0.0
+        with:
+          bicepFilePath: ./src/Bicep/storageAccounts/deploy.bicep
+          outputFilePath: ./src/Bicep/storageAccounts/azuredeploy.json
+
+      - name: bicep-build - Sites
+        uses: Azure/bicep-build-action@v1.0.0
+        with:
+          bicepFilePath: ./src/Bicep/sites/deploy.bicep
+          outputFilePath: ./src/Bicep/sites/azuredeploy.json
+
+      - name: "ARM - TTK module install and test Key vault"
         id: arm-ttk
         shell: pwsh
         run: |
           Invoke-WebRequest -Uri "https://github.com/Azure/arm-ttk/releases/download/20220121/arm-ttk.2022.01.21.zip" -OutFile "arm-ttk.2022.01.21.zip"
           Expand-Archive .\arm-ttk.2022.01.21.zip
           Import-Module ./arm-ttk.2022.01.21/arm-ttk/arm-ttk.psd1 -Force
+          write-output ">>>> arm-ttk  Key vault analysis"
           Test-AzTemplate -TemplatePath ./src/Bicep/vaults/azuredeploy.json
+          write-output ">>>> arm-ttk  storageAccounts analysis"
+          Test-AzTemplate -TemplatePath ./src/Bicep/storageAccounts/azuredeploy.json
+          write-output ">>>> arm-ttk  Site analysis"
+          Test-AzTemplate -TemplatePath ./src/Bicep/sites/azuredeploy.json
 
       - name: SNYK - Run Snyk to check key vault ARM template file for issues
         uses: snyk/actions/iac@master
@@ -43,6 +60,23 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           file: ./src/Bicep/vaults/azuredeploy.json
+      - name: SNYK - Run Snyk to check storageAccounts template file for issues
+        uses: snyk/actions/iac@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          file: ./src/Bicep/storageAccounts/azuredeploy.json
+      - name: SNYK - Run Snyk to check sites template file for issues
+        uses: snyk/actions/iac@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          file: ./src/Bicep/sites/azuredeploy.json
+
+      - name: Upload result to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: snyk.sarif
 
       - name: deploy
         uses: azure/arm-deploy@v1
