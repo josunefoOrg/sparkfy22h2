@@ -22,8 +22,8 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
 
-      - name: Bicep Build
-        uses: Azure-Samples/bicep-build-action@v1.0.0
+      - name: bicep-build-output
+        uses: Azure/bicep-build-action@v1.0.0
         with:
           bicepFilePath: ./src/Bicep/vaults/deploy.bicep
           outputFilePath: ./src/Bicep/vaults/azuredeploy.json
