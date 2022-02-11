@@ -40,7 +40,7 @@ jobs:
           bicepFilePath: ./src/Bicep/sites/deploy.bicep
           outputFilePath: ./src/Bicep/sites/azuredeploy.json
 
-      - name: "ARM - TTK module install and test Key vault"
+      - name: "ARM - TTK module install and test modules"
         id: arm-ttk
         shell: pwsh
         run: |
@@ -48,11 +48,11 @@ jobs:
           Expand-Archive .\arm-ttk.2022.01.21.zip
           Import-Module ./arm-ttk.2022.01.21/arm-ttk/arm-ttk.psd1 -Force
           write-output ">>>> arm-ttk  Key vault analysis"
-          Test-AzTemplate -TemplatePath ./src/Bicep/vaults/azuredeploy.json
+          Test-AzTemplate -TemplatePath ./src/Bicep/vaults/azuredeploy.json -ErrorAction continue
           write-output ">>>> arm-ttk  storageAccounts analysis"
-          Test-AzTemplate -TemplatePath ./src/Bicep/storageAccounts/azuredeploy.json
+          Test-AzTemplate -TemplatePath ./src/Bicep/storageAccounts/azuredeploy.json -ErrorAction continue
           write-output ">>>> arm-ttk  Site analysis"
-          Test-AzTemplate -TemplatePath ./src/Bicep/sites/azuredeploy.json
+          Test-AzTemplate -TemplatePath ./src/Bicep/sites/azuredeploy.json -ErrorAction continue
 
       - name: SNYK - Run Snyk to check key vault ARM template file for issues
         uses: snyk/actions/iac@master
