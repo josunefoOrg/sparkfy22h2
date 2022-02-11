@@ -81,10 +81,27 @@ jobs:
         with:
           sarif_file: snyk.sarif
 
-      - name: deploy
+      - name: Deploy Key Vault
         uses: azure/arm-deploy@v1
         with:
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
           resourceGroupName: "SPARKFY22H2-BICEP"
           template: ./src/Bicep/vaults/deploy.bicep
+          failOnStdErr: false
+
+      - name: Deploy Storage Account
+        uses: azure/arm-deploy@v1
+        with:
+          subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
+          resourceGroupName: "SPARKFY22H2-BICEP"
+          template: ./src/Bicep/storageAccounts/deploy.bicep
+          failOnStdErr: false
+
+      - name: Deploy Sites
+        uses: azure/arm-deploy@v1
+        with:
+          subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
+          resourceGroupName: "SPARKFY22H2-BICEP"
+          template: ./src/Bicep/sites/deploy.bicep
+          parameters: ./src/Bicep/sites/.parameters/wa.min.parameters.json
           failOnStdErr: false

@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "name": {
-            "value": "<<namePrefix>>-az-wa-min-001"
+            "value": "jojo-spark-az-wa-min-001"
         },
         "kind": {
             "value": "app"
