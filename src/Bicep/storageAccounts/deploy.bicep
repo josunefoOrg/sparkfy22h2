@@ -1,6 +1,6 @@
 @maxLength(24)
 @description('Optional. Name of the Storage Account.')
-param name string = 'jojo-spark-stg'
+param name string = 'jojosparkstg'
 
 @description('Optional. Location for all resources.')
 param location string = resourceGroup().location
