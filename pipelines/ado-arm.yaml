@@ -32,6 +32,7 @@ stages:
         workingDirectory: $(Build.SourcesDirectory)
         script: |
           npm install snyk@latest -g
+          snyk auth --token=$(SnykAPIConnection)
           snyk test iac --file=./src/ARM/IaC/keyvault/deploy.json
 
     - task: CmdLine@2
