@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: tfsec
-        uses: tfsec/tfsec-sarif-action@main
+        uses: tfsec/tfsec-sarif-action@master
         with:
           sarif_file: tfsec.sarif
           working_directory: ./src/Terraform/key-vault
