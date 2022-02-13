@@ -3,7 +3,7 @@ trigger:
 - main
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: windows-2022
 
 variables:
   imageName: python
@@ -16,7 +16,7 @@ stages:
   - job: Scan
     displayName: Scan vulnerabilities for ARM templates
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: 'windows-2022'
     steps:
     - checkout: self
     - task: CmdLine@2
@@ -32,18 +32,21 @@ stages:
         workingDirectory: $(Build.SourcesDirectory)
         script: |
           npm install snyk@latest -g
-          snyk auth --token=$(SnykAPIConnection)
-          snyk test iac --file=./src/ARM/IaC/keyvault/deploy.json
+          snyk auth $(SnykAPIConnection)
+          snyk iac test ./src/Bicep/vaults/deploy.json --json-file-output=./SnykReport-SC.json
+          write-host "test"
+          mkdir HTML && cd HTML
+          npm install snyk-to-html -g
+          snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-SC.json -o SnykReport-Keyvault.html
 
     - task: CmdLine@2
-      displayName: Transform both tests to HTML
+      displayName: Transform test to HTML
       inputs:
         workingDirectory: $(Build.SourcesDirectory)
         script: |
           mkdir HTML && cd HTML
           npm install snyk-to-html -g
-          snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-PythonOld.json -o SnykReport-PythonOld.html
-          snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-PythonLatest.json -o SnykReport-PythonLatest.html
+          snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-SC.json -o SnykReport-Keyvault.html
 
     - task: PublishBuildArtifacts@1
       displayName: Publish HTML reports as artifacts
@@ -52,3 +55,17 @@ stages:
         artifactName: 'htmlReports'
         publishLocation: 'Container'
         parallel: true
+
+    - task: RunARMTTKTests@1
+      inputs:
+        templatelocation: '$(System.DefaultWorkingDirectory)\src\Bicep\vaults\*'
+        resultLocation: '$(System.DefaultWorkingDirectory)\results'
+        allTemplatesMain: false
+        cliOutputResults: true
+      condition: always()
+
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFormat: 'NUnit'
+        testResultsFiles: '$(System.DefaultWorkingDirectory)\results\*-armttk.xml'
+      condition: always()
