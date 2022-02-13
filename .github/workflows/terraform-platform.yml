@@ -1,0 +1,27 @@
+name: "TF test Workflow"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, users/**]
+    paths:
+    - "src/Terraform/**"
+jobs:
+  build_source_code_dev:
+    environment: "Dev"
+    runs-on: ubuntu-latest
+    name: "Test and deploy infra"
+    steps:
+      - uses: actions/checkout@v2
+      - name: tfsec
+        uses: tfsec/tfsec-sarif-action@main
+        with:
+          sarif_file: tfsec.sarif
+          working_directory: ./src/Terraform/key-vault
+          tfsec_version: 1.1.5
+          tfsec_args: --verbose
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: ./src/Terraform/key-vault/tfsec.sarif
