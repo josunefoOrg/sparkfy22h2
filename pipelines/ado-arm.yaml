@@ -19,20 +19,20 @@ stages:
       vmImage: 'ubuntu-latest'
     steps:
     - checkout: self
-
     - task: CmdLine@2
-      displayName: Install Snyk Cli
+      displayName: Install-Snyk-Cli
+      inputs:
         workingDirectory: $(Build.SourcesDirectory)
         script: |
           npm install snyk@latest -g
 
     - task: CmdLine@2
-      displayName: Install Snyk Cli
+      displayName: Snyk-test-module
+      inputs:
         workingDirectory: $(Build.SourcesDirectory)
         script: |
           npm install snyk@latest -g
           snyk test iac --file=./src/ARM/IaC/keyvault/deploy.json
-
 
     - task: CmdLine@2
       displayName: Transform both tests to HTML
