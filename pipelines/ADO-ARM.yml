@@ -1,0 +1,53 @@
+trigger:
+- develop
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  imageName: python
+  trivyVersion: 0.20.1
+
+stages:
+- stage: Scan
+  displayName: Scan vulnerabilities for ARM templates
+  jobs:
+  - job: Scan
+    displayName: Scan vulnerabilities for ARM templates
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - checkout: self
+
+    - task: CmdLine@2
+      displayName: Install Snyk Cli
+        workingDirectory: $(Build.SourcesDirectory)
+        script: |
+          npm install snyk@latest -g
+
+    - task: CmdLine@2
+      displayName: Install Snyk Cli
+        workingDirectory: $(Build.SourcesDirectory)
+        script: |
+          npm install snyk@latest -g
+          snyk test iac --file=./src/ARM/IaC/keyvault/deploy.json
+
+
+    - task: CmdLine@2
+      displayName: Transform both tests to HTML
+      inputs:
+        workingDirectory: $(Build.SourcesDirectory)
+        script: |
+          mkdir HTML && cd HTML
+          npm install snyk-to-html -g
+          snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-PythonOld.json -o SnykReport-PythonOld.html
+          snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-PythonLatest.json -o SnykReport-PythonLatest.html
+
+    - task: PublishBuildArtifacts@1
+      displayName: Publish HTML reports as artifacts
+      inputs:
+        pathToPublish: '$(Build.SourcesDirectory)/HTML'
+        artifactName: 'htmlReports'
+        publishLocation: 'Container'
+        parallel: true
