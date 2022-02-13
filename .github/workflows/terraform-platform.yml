@@ -18,7 +18,7 @@ jobs:
         with:
           sarif_file: tfsec-key-vault.sarif
           working_directory: ./src/Terraform/key-vault
-          tfsec_version: 1.1.5
+          tfsec_version: v1.1.5
           tfsec_args: --verbose
 
       - name: Upload SARIF file
