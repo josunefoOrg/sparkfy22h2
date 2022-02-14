@@ -1,0 +1,34 @@
+name: tf-pr-commenter
+on:
+  pull_request:
+
+env:
+  tfLintVersion: v0.34.1
+
+jobs:
+  terraform:
+    name: Terraform PR commenter
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone repo
+        uses: actions/checkout@master
+
+      - name: tflint
+        uses: reviewdog/action-tflint@master
+        with:
+          github_token: ${{ github.token }}
+          working_directory: ./src/Terraform/key-vault
+          reporter: github-pr-review
+          fail_on_error: "false"
+          filter_mode: nofilter
+          tflint_version: "{{ env.tfLintVersion }}"
+          tflint_rulesets: azurerm
+          flags: --module
+
+      - name: tfsec
+        uses: tfsec/tfsec-pr-commenter-action@main
+        with:
+          tfsec_args: --soft-fail
+          github_token: ${{ github.token }}
+          working_directory: ./src/Terraform
