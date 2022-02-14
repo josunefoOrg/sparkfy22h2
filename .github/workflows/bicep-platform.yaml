@@ -34,16 +34,11 @@ jobs:
           bicepFilePath: ./src/Bicep/storageAccounts/deploy.bicep
           outputFilePath: ./src/Bicep/storageAccounts/azuredeploy.json
 
-      - name: bicep-build - Sites
-        uses: Azure/bicep-build-action@v1.0.0
-        with:
-          bicepFilePath: ./src/Bicep/sites/deploy.bicep
-          outputFilePath: ./src/Bicep/sites/azuredeploy.json
-
       - name: "ARM - TTK module install and test modules"
         id: arm-ttk
         shell: pwsh
         run: |
+          write-output ">>>> Installing ARM_TTK module"
           Invoke-WebRequest -Uri "https://github.com/Azure/arm-ttk/releases/download/20220121/arm-ttk.2022.01.21.zip" -OutFile "arm-ttk.2022.01.21.zip"
           Expand-Archive .\arm-ttk.2022.01.21.zip
           Import-Module ./arm-ttk.2022.01.21/arm-ttk/arm-ttk.psd1 -Force
@@ -51,8 +46,7 @@ jobs:
           Test-AzTemplate -TemplatePath ./src/Bicep/vaults/azuredeploy.json -ErrorAction continue
           write-output ">>>> arm-ttk  storageAccounts analysis"
           Test-AzTemplate -TemplatePath ./src/Bicep/storageAccounts/azuredeploy.json -ErrorAction continue
-          write-output ">>>> arm-ttk  Site analysis"
-          Test-AzTemplate -TemplatePath ./src/Bicep/sites/azuredeploy.json -ErrorAction continue
+
 
       - name: SNYK - Run Snyk to check key vault ARM template file for issues
         continue-on-error: true
@@ -68,13 +62,6 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           file: ./src/Bicep/storageAccounts/azuredeploy.json
-      - name: SNYK - Run Snyk to check sites template file for issues
-        continue-on-error: true
-        uses: snyk/actions/iac@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          file: ./src/Bicep/sites/azuredeploy.json
 
       - name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v1
@@ -95,13 +82,4 @@ jobs:
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
           resourceGroupName: "SPARKFY22H2-BICEP"
           template: ./src/Bicep/storageAccounts/deploy.bicep
-          failOnStdErr: false
-
-      - name: Deploy Sites
-        uses: azure/arm-deploy@v1
-        with:
-          subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
-          resourceGroupName: "SPARKFY22H2-BICEP"
-          template: ./src/Bicep/sites/deploy.bicep
-          parameters: ./src/Bicep/sites/.parameters/wa.min.parameters.json
           failOnStdErr: false
