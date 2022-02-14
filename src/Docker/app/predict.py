@@ -22,7 +22,7 @@ labels = []
 
 
 def initialize():
-    print('Loading model...',end=''),
+    print('Loading model...', end=''),
     with graph.as_default():
         with open(filename, 'rb') as f:
             graph_def.ParseFromString(f.read())
@@ -30,14 +30,15 @@ def initialize():
 
     # Retrieving 'network_input_size' from shape of 'input_node'
     with tf.compat.v1.Session(graph=graph) as sess:
-        input_tensor_shape = sess.graph.get_tensor_by_name(input_node).shape.as_list()
-        
+        input_tensor_shape = sess.graph.get_tensor_by_name(
+            input_node).shape.as_list()
+
     assert len(input_tensor_shape) == 4
     assert input_tensor_shape[1] == input_tensor_shape[2]
 
     global network_input_size
     network_input_size = input_tensor_shape[1]
-   
+
     print('Success!')
     print('Loading labels...', end='')
     with open(labels_filename, 'rt') as lf:
@@ -47,16 +48,18 @@ def initialize():
 
 
 def log_msg(msg):
-    print("{}: {}".format(datetime.now(),msg))
+    print("{}: {}".format(datetime.now(), msg))
+
 
 def predict_url(imageUrl):
     """
     predicts image by url
     """
-    log_msg("Predicting from url: " +imageUrl)
+    log_msg("Predicting from url: " + imageUrl)
     with urlopen(imageUrl) as testImage:
         image = Image.open(testImage)
         return predict_image(image)
+
 
 def update_orientation(image):
     """
@@ -80,6 +83,7 @@ def update_orientation(image):
                 image = image.transpose(Image.FLIP_LEFT_RIGHT)
     return image
 
+
 def predict_image(image):
     """
     calls model's image prediction
@@ -92,48 +96,49 @@ def predict_image(image):
             log_msg("Converting to RGB")
             image = image.convert("RGB")
 
-        w,h = image.size
+        w, h = image.size
         log_msg("Image size: " + str(w) + "x" + str(h))
-        
+
         # Update orientation based on EXIF tags
         image = update_orientation(image)
-        
+
         metadata = mscviplib.GetImageMetadata(image)
         cropped_image = mscviplib.PreprocessForInferenceAsTensor(metadata,
                                                                  image.tobytes(),
                                                                  mscviplib.ResizeAndCropMethod.CropCenter,
-                                                                 (network_input_size, network_input_size),
+                                                                 (network_input_size,
+                                                                  network_input_size),
                                                                  mscviplib.InterpolationType.Bilinear,
                                                                  mscviplib.ColorSpace.BGR, (), ())
         cropped_image = np.moveaxis(cropped_image, 0, -1)
 
         with tf.compat.v1.Session(graph=graph) as sess:
             prob_tensor = sess.graph.get_tensor_by_name(output_layer)
-            predictions, = sess.run(prob_tensor, {input_node: [cropped_image] })
-            
+            predictions, = sess.run(prob_tensor, {input_node: [cropped_image]})
+
             result = []
             for p, label in zip(predictions, labels):
-                truncated_probablity = np.float64(round(p,8))
+                truncated_probablity = np.float64(round(p, 8))
                 if truncated_probablity > 1e-8:
                     result.append({
                         'tagName': label,
                         'probability': truncated_probablity,
                         'tagId': '',
-                        'boundingBox': None })
+                        'boundingBox': None})
 
-            response = { 
+            response = {
                 'id': '',
                 'project': '',
                 'iteration': '',
                 'created': datetime.utcnow().isoformat(),
-                'predictions': result 
+                'predictions': result
             }
 
             log_msg("Results: " + str(response))
             del image
             del cropped_image
             return response
-            
+
     except Exception as e:
         log_msg(str(e))
         return 'Error: Could not preprocess image for prediction. ' + str(e)
