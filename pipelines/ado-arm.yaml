@@ -15,12 +15,6 @@ stages:
       vmImage: 'windows-2022'
     steps:
     - checkout: self
-    - task: CmdLine@2
-      displayName: Install-Snyk-Cli
-      inputs:
-        workingDirectory: $(Build.SourcesDirectory)
-        script: |
-          npm install snyk@latest -g
 
     - task: CmdLine@2
       displayName: Snyk-test-module
@@ -30,7 +24,8 @@ stages:
           npm install snyk@latest -g
           snyk auth $(SnykAPIConnection)
           snyk iac test ./src/ARM/AzureSecurityCenter/deploy.json --json-file-output=./SnykReport-AzureSecurityCenter.json
-          write-host "test"
+          write-host ">>> test completed"
+
 
     - task: CmdLine@2
       displayName: Transform test to HTML
@@ -40,6 +35,8 @@ stages:
           mkdir HTML && cd HTML
           npm install snyk-to-html -g
           snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.json -o SnykReport-AzureSecurityCenter.html
+          write-host ">>> test completed"
+
 
     - task: PublishBuildArtifacts@1
       displayName: Publish HTML reports as artifacts
