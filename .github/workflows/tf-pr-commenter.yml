@@ -2,9 +2,6 @@ name: tf-pr-commenter
 on:
   pull_request:
 
-env:
-  tfLintVersion: v0.34.1
-
 jobs:
   terraform:
     name: Terraform PR commenter
@@ -22,7 +19,7 @@ jobs:
           reporter: github-pr-review
           fail_on_error: "false"
           filter_mode: nofilter
-          tflint_version: "{{ env.tfLintVersion }}"
+          tflint_version: v0.34.1
           tflint_rulesets: azurerm
           flags: --module
 
