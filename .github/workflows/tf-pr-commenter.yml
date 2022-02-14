@@ -17,8 +17,6 @@ jobs:
           github_token: ${{ github.token }}
           working_directory: ./src/Terraform/key-vault
           reporter: github-pr-review
-          fail_on_error: "false"
-          filter_mode: nofilter
           tflint_version: v0.34.1
           tflint_rulesets: azurerm
           flags: --module
