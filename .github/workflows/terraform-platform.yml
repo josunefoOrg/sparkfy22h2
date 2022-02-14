@@ -39,18 +39,13 @@ jobs:
             rm tflint-AzRuleset.zip
             chmod +x tflint-ruleset-azurerm
   
-            docker run --rm -v "${{ github.workspace }}/src/Terraform:/data" -w="/data/key-vault" -t ghcr.io/terraform-linters/tflint:${{ env.tfLintVersion }} -f sarif --module --loglevel=debug $tfLintRulesExcluded > ${{ github.workspace }}/src/Terraform/key-vault/tflint-key-vault.sarif
+            docker run --rm -v "${{ github.workspace }}/src/Terraform:/data" -w="/data/key-vault" -t ghcr.io/terraform-linters/tflint:${{ env.tfLintVersion }} -f sarif --module --loglevel=debug $tfLintRulesExcluded
 
       - name: tfsec
         id: tfsec-execution
         continue-on-error: true
         run: |
           docker run --rm -v "${{ github.workspace }}/src/Terraform:/src" aquasec/tfsec:${{ env.tfsecVersion }}  --format sarif /src/key-vault > ${{ github.workspace }}/src/Terraform/key-vault/tfsec-key-vault.sarif 
-
-      - name: Upload tflint SARIF file
-        uses: github/codeql-action/upload-sarif@v1
-        with:
-          sarif_file: ./src/Terraform/key-vault/tflint-key-vault.sarif
 
       - name: Upload tfsec SARIF file
         uses: github/codeql-action/upload-sarif@v1
