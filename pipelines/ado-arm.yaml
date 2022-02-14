@@ -33,11 +33,11 @@ stages:
         script: |
           npm install snyk@latest -g
           snyk auth $(SnykAPIConnection)
-          snyk iac test ./src/Bicep/vaults/deploy.json --json-file-output=./SnykReport-SC.json
+          snyk iac test ./src/Bicep/vaults/deploy.json --json-file-output=./SnykReport-Keyvault.json
           write-host "test"
           mkdir HTML && cd HTML
           npm install snyk-to-html -g
-          snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-SC.json -o SnykReport-Keyvault.html
+          snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-Keyvault.json -o SnykReport-Keyvault.html
 
     - task: CmdLine@2
       displayName: Transform test to HTML
@@ -46,7 +46,7 @@ stages:
         script: |
           mkdir HTML && cd HTML
           npm install snyk-to-html -g
-          snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-SC.json -o SnykReport-Keyvault.html
+          snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-Keyvault.json -o SnykReport-Keyvault.html
 
     - task: PublishBuildArtifacts@1
       displayName: Publish HTML reports as artifacts
