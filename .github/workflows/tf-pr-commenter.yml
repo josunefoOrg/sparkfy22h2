@@ -24,9 +24,9 @@ jobs:
 
       - name: tflint
         continue-on-error: true
-        working-directory: ${{ github.workspace }}/src/Terraform/key-vault
         run: |
           tflint --init
+          cd ${{ github.workspace }}/src/Terraform/key-vault
           tflint -f compact --module
 
       - name: tfsec
