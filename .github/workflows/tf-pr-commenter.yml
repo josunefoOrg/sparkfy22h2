@@ -24,6 +24,7 @@ jobs:
 
       - name: tflint
         continue-on-error: true
+        working-directory: ${{ github.workspace }}/src/Terraform/key-vault
         run: |
             echo 'plugin "azurerm" {' >.tflint.hcl
             echo '  enabled = true' >>.tflint.hcl
@@ -36,9 +37,7 @@ jobs:
             rm tflint-AzRuleset.zip
             chmod +x tflint-ruleset-azurerm
 
-            tflint --init
-            cd ${{ github.workspace }}/src/Terraform/key-vault
-            tflint -f compact --module
+            tflint -f compact --module --loglevel=debug
 
       - name: tfsec
         uses: tfsec/tfsec-pr-commenter-action@main
