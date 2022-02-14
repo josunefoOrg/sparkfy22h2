@@ -37,6 +37,7 @@ jobs:
             rm tflint-AzRuleset.zip
             chmod +x tflint-ruleset-azurerm
 
+            cd ../..
             tflint -f compact --module --loglevel=debug
 
       - name: tfsec
