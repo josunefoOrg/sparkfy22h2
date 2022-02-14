@@ -17,28 +17,39 @@ jobs:
       - name: Clone repo
         uses: actions/checkout@master
 
-      - uses: terraform-linters/setup-tflint@v1
-        name: Setup TFLint
-        with:
-          github_token: ${{ github.token }}
-          tflint_version: ${{ env.tfLintVersion }}
+      # - uses: terraform-linters/setup-tflint@v1
+      #   name: Setup TFLint
+      #   with:
+      #     github_token: ${{ github.token }}
+      #     tflint_version: ${{ env.tfLintVersion }}
 
       - name: tflint
-        working-directory: ${{ github.workspace }}/src/Terraform/key-vault
-        run: |
-            echo 'plugin "azurerm" {' >.tflint.hcl
-            echo '  enabled = true' >>.tflint.hcl
-            echo '}' >>.tflint.hcl
-            mkdir -p .tflint.d/plugins
-            cd .tflint.d/plugins
-            
-            curl -L "https://github.com/terraform-linters/tflint-ruleset-azurerm/releases/download/${{ env.tfLintAzureRulesVersion }}/tflint-ruleset-azurerm_linux_amd64.zip" -o tflint-AzRuleset.zip
-            unzip tflint-AzRuleset.zip
-            rm tflint-AzRuleset.zip
-            chmod +x tflint-ruleset-azurerm
+          uses: reviewdog/action-tflint@master
+          with:
+            github_token: ${{ github.token }}
+            working_directory: "${{ github.workspace }}/src/Terraform/key-vault"
+            reporter: github-pr-review
+            fail_on_error: "true"
+            tflint_version: "${{ env.tfLintVersion }}"
+            tflint_rulesets: "azurerm"
+            flags: "--module"
 
-            cd ../..
-            tflint -f compact --force
+      # - name: tflint
+      #   working-directory: ${{ github.workspace }}/src/Terraform/key-vault
+      #   run: |
+      #       echo 'plugin "azurerm" {' >.tflint.hcl
+      #       echo '  enabled = true' >>.tflint.hcl
+      #       echo '}' >>.tflint.hcl
+      #       mkdir -p .tflint.d/plugins
+      #       cd .tflint.d/plugins
+            
+      #       curl -L "https://github.com/terraform-linters/tflint-ruleset-azurerm/releases/download/${{ env.tfLintAzureRulesVersion }}/tflint-ruleset-azurerm_linux_amd64.zip" -o tflint-AzRuleset.zip
+      #       unzip tflint-AzRuleset.zip
+      #       rm tflint-AzRuleset.zip
+      #       chmod +x tflint-ruleset-azurerm
+
+      #       cd ../..
+      #       tflint -f compact --force
 
       - name: tfsec
         uses: tfsec/tfsec-pr-commenter-action@main
