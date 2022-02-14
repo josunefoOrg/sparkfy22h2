@@ -27,7 +27,7 @@ jobs:
         run: |
             tfLintRulesExcluded=`for i in $(echo ${{ env.tflintRulesExcluded }} | sed "s/,/ /g"); do echo "--disable-rule=$i"; done`
   
-            echo tflint --module --loglevel=debug $tfLintRulesExcluded
+            echo tflint --module -f sarif $tfLintRulesExcluded
             echo 'plugin "azurerm" {' >.tflint.hcl
             echo '  enabled = true' >>.tflint.hcl
             echo '}' >>.tflint.hcl
