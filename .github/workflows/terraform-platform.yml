@@ -25,5 +25,5 @@ jobs:
           sarif_file: ./src/Terraform/key-vault/tfsec-key-vault.sarif
 
       - name: There are vulnerabilities
-        if: steps.tfsec-execution.outcome == 'success'
+        if: steps.tfsec-execution.outcome != 'success'
         run: echo 'Deployment to prod is forbidden'
