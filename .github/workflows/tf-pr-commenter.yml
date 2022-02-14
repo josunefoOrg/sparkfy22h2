@@ -20,10 +20,10 @@ jobs:
       - uses: terraform-linters/setup-tflint@v1
         name: Setup TFLint
         with:
+          github_token: ${{ github.token }}
           tflint_version: ${{ env.tfLintVersion }}
 
       - name: tflint
-        continue-on-error: true
         working-directory: ${{ github.workspace }}/src/Terraform/key-vault
         run: |
             echo 'plugin "azurerm" {' >.tflint.hcl
@@ -38,7 +38,7 @@ jobs:
             chmod +x tflint-ruleset-azurerm
 
             cd ../..
-            tflint -f compact --module --loglevel=debug
+            tflint -f compact --force
 
       - name: tfsec
         uses: tfsec/tfsec-pr-commenter-action@main
