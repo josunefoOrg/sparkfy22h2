@@ -39,7 +39,7 @@ jobs:
             rm tflint-AzRuleset.zip
             chmod +x tflint-ruleset-azurerm
   
-            docker run --rm -v "${{ github.workspace }}/src/Terraform:/data" -w="/data/key-vault" -t ghcr.io/terraform-linters/tflint:${{ env.tfLintVersion }} -f sarif --module --loglevel=debug $tfLintRulesExcluded
+            docker run --rm -v "${{ github.workspace }}/src/Terraform:/data" -w="/data/key-vault" -t ghcr.io/terraform-linters/tflint:${{ env.tfLintVersion }} -f sarif --module $tfLintRulesExcluded
 
       - name: tfsec
         id: tfsec-execution
