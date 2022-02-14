@@ -45,6 +45,7 @@ jobs:
           reporter: github-pr-review
           fail_on_error: "true"
           tflint_version: "${{ env.tfLintVersion }}"
+          tflint_rulesets: "azurerm"
           flags: "--module"
 
       # - name: tflint
