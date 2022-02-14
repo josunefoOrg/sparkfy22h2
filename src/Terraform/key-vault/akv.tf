@@ -4,7 +4,7 @@ resource "azurerm_key_vault" "akv" {
   resource_group_name = var.resourceGroup
   tenant_id           = "72f988bf-86f1-41af-91ab-2d7cd011db47"
 
-  sku_name                 = "standard"
+  sku_name                 = "standard3"
   purge_protection_enabled = false
 
   enabled_for_disk_encryption     = false
