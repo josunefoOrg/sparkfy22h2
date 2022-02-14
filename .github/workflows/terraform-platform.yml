@@ -14,12 +14,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: tfsec
-        uses: tfsec/tfsec-sarif-action@master
-        with:
-          sarif_file: ./src/Terraform/key-vault/tfsec-key-vault.sarif
-          working_directory: ./src/Terraform/key-vault
-          tfsec_version: v1.1.5
-          tfsec_args: --verbose
+        run: |
+          docker run --rm -v "./src/Terraform:/src" aquasec/tfsec --format sarif --out /src/key-vault/tfsec-key-vault.sarif /src/key-vault
 
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v1
