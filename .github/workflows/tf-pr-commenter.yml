@@ -17,12 +17,6 @@ jobs:
       - name: Clone repo
         uses: actions/checkout@master
 
-      # - uses: terraform-linters/setup-tflint@v1
-      #   name: Setup TFLint
-      #   with:
-      #     github_token: ${{ github.token }}
-      #     tflint_version: ${{ env.tfLintVersion }}
-
       - name: Setup tflint AzureRM plugin
         working-directory: ${{ github.workspace }}/src/Terraform/key-vault
         run: |
@@ -48,25 +42,9 @@ jobs:
           tflint_rulesets: "azurerm"
           flags: "--module"
 
-      # - name: tflint
-      #   working-directory: ${{ github.workspace }}/src/Terraform/key-vault
-      #   run: |
-      #       echo 'plugin "azurerm" {' >.tflint.hcl
-      #       echo '  enabled = true' >>.tflint.hcl
-      #       echo '}' >>.tflint.hcl
-      #       mkdir -p .tflint.d/plugins
-      #       cd .tflint.d/plugins
-            
-      #       curl -L "https://github.com/terraform-linters/tflint-ruleset-azurerm/releases/download/${{ env.tfLintAzureRulesVersion }}/tflint-ruleset-azurerm_linux_amd64.zip" -o tflint-AzRuleset.zip
-      #       unzip tflint-AzRuleset.zip
-      #       rm tflint-AzRuleset.zip
-      #       chmod +x tflint-ruleset-azurerm
-
-      #       cd ../..
-      #       tflint -f compact --force
-
       - name: tfsec
         uses: tfsec/tfsec-pr-commenter-action@main
+        if: always()
         with:
           tfsec_args: --soft-fail
           tfsec_version: ${{ env.tfsecVersion }}
