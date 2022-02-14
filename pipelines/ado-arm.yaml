@@ -30,7 +30,7 @@ stages:
           npm install snyk@latest -g
           snyk auth $(SnykAPIConnection)
           snyk iac test ./src/ARM/AzureSecurityCenter/deploy.json --json-file-output=./SnykReport-AzureSecurityCenter.json
-          write-host "test"
+          write-host ">>> test completed"
 
     - task: CmdLine@2
       displayName: Transform test to HTML
@@ -40,6 +40,8 @@ stages:
           mkdir HTML && cd HTML
           npm install snyk-to-html -g
           snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.json -o SnykReport-AzureSecurityCenter.html
+          write-host ">>> test completed"
+
 
     - task: PublishBuildArtifacts@1
       displayName: Publish HTML reports as artifacts
@@ -73,7 +75,7 @@ stages:
         location: 'westeurope'
         resourceGroupName: 'SPARKFY22H2-ARM'
         templateLocation: 'Linked artifact'
-        csmFile: '$(System.DefaultWorkingDirectory)/src/ARM/AzureSecurityCenter/deploy.json'
+        csmFile: '$(System.DefaultWorkingDirectory)\src\ARM\AzureSecurityCenter\deploy.json'
         deploymentMode: 'Incremental'
         deploymentName: 'deploySecurityCenter'
         deploymentOutputs: 'armOutput'
