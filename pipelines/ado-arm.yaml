@@ -76,6 +76,7 @@ stages:
         azureResourceManagerConnection: 'josunefoConnection'
         subscriptionId: 'ed29c799-3b06-4306-971a-202c3c2d29a9'
         action: 'Create Or Update Resource Group'
+        location: 'westeurope'
         resourceGroupName: 'SPARKFY22H2-ARM'
         templateLocation: '$(System.DefaultWorkingDirectory)\src\ARM\AzureSecurityCenter\deploy.json'
         deploymentMode: 'Incremental'
