@@ -27,7 +27,7 @@ jobs:
         uses: reviewdog/action-tflint@master
         with:
           github_token: ${{ github.token }}
-          working_directory: "${{ github.workspace }}/src/Terraform/key-vault"
+          working_directory: "src/Terraform/key-vault"
           reporter: github-pr-review
           fail_on_error: "true"
           tflint_version: "${{ env.tfLintVersion }}"
