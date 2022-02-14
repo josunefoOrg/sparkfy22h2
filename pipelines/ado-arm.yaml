@@ -33,7 +33,7 @@ stages:
         script: |
           npm install snyk@latest -g
           snyk auth $(SnykAPIConnection)
-          snyk iac test ./src/Bicep/AzureSecurityCenter/deploy.json --json-file-output=./SnykReport-AzureSecurityCenter.json
+          snyk iac test ./src/ARM/AzureSecurityCenter/deploy.json --json-file-output=./SnykReport-AzureSecurityCenter.json
           write-host "test"
           mkdir HTML && cd HTML
           npm install snyk-to-html -g
