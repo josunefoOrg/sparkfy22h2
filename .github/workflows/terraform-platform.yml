@@ -6,6 +6,13 @@ on:
     branches: [main, users/**]
     paths:
     - "src/Terraform/**"
+
+env:
+  tflintRulesExcluded: ""
+  tfLintAzureRulesVersion: v0.14.0
+  tfLintVersion: v0.34.1
+  tfsecVersion: v1.1.5
+
 jobs:
   build_source_code_dev:
     environment: "Dev"
@@ -13,11 +20,29 @@ jobs:
     name: "Test and deploy infra"
     steps:
       - uses: actions/checkout@v2
+      - name: tflint  
+        script: |
+            tfLintRulesExcluded=`for i in $(echo ${{ env.tflintRulesExcluded }} | sed "s/,/ /g"); do echo "--disable-rule=$i"; done`
+  
+            echo tflint --module --loglevel=debug $tfLintRulesExcluded
+            echo 'plugin "azurerm" {' >.tflint.hcl
+            echo '  enabled = true' >>.tflint.hcl
+            echo '}' >>.tflint.hcl
+            mkdir -p .tflint.d/plugins
+            cd .tflint.d/plugins
+            
+            curl -L "https://github.com/terraform-linters/tflint-ruleset-azurerm/releases/download/${{ env.tfLintAzureRulesVersion }}/tflint-ruleset-azurerm_linux_amd64.zip" -o tflint-AzRuleset.zip
+            unzip tflint-AzRuleset.zip
+            rm tflint-AzRuleset.zip
+            chmod +x tflint-ruleset-azurerm
+  
+            docker run --rm -v "${{ github.workspace }}/src/Terraform:/data" -w="/data/key-vault" -t ghcr.io/terraform-linters/tflint:${{ env.tfLintVersion }} --loglevel=debug $tfLintRulesExcluded
+
       - name: tfsec
         id: tfsec-execution
         continue-on-error: true
         run: |
-          docker run --rm -v "${{ github.workspace }}/src/Terraform:/src" aquasec/tfsec --format sarif /src/key-vault > ${{ github.workspace }}/src/Terraform/key-vault/tfsec-key-vault.sarif 
+          docker run --rm -v "${{ github.workspace }}/src/Terraform:/src" aquasec/tfsec:${{ env.tfsecVersion }}  --format sarif /src/key-vault > ${{ github.workspace }}/src/Terraform/key-vault/tfsec-key-vault.sarif 
 
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v1
