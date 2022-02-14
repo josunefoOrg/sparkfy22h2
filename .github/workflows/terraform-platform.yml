@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: tfsec
         run: |
-          docker run --rm -v "{{ GITHUB_WORKSPACE }}/Terraform:/src" aquasec/tfsec --format sarif --out /src/key-vault/tfsec-key-vault.sarif /src/key-vault
+          docker run --rm -v "{{ env.GITHUB_WORKSPACE }}/Terraform:/src" aquasec/tfsec --format sarif --out /src/key-vault/tfsec-key-vault.sarif /src/key-vault
 
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v1
