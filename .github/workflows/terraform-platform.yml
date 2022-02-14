@@ -23,7 +23,7 @@ jobs:
       - name: tflint
         id: tflint-execution
         continue-on-error: true
-        working-directory: ${{ github.workspace }}/src/Terraform/key-vault
+        working-directory: ${{ github.workspace }}/src/Terraform/container-registry
         run: |
             tfLintRulesExcluded=`for i in $(echo ${{ env.tflintRulesExcluded }} | sed "s/,/ /g"); do echo "--disable-rule=$i"; done`
   
@@ -39,23 +39,23 @@ jobs:
             rm tflint-AzRuleset.zip
             chmod +x tflint-ruleset-azurerm
   
-            docker run --rm -v "${{ github.workspace }}/src/Terraform:/data" -w="/data/key-vault" -t ghcr.io/terraform-linters/tflint:${{ env.tfLintVersion }} -f sarif --module $tfLintRulesExcluded > ${{ github.workspace }}/src/Terraform/key-vault/tflint-key-vault.sarif
+            docker run --rm -v "${{ github.workspace }}/src/Terraform:/data" -w="/data/container-registry" -t ghcr.io/terraform-linters/tflint:${{ env.tfLintVersion }} -f sarif --module $tfLintRulesExcluded > ${{ github.workspace }}/src/Terraform/container-registry/tflint-container-registry.sarif
 
       - name: tfsec
         id: tfsec-execution
         continue-on-error: true
         run: |
-          docker run --rm -v "${{ github.workspace }}/src/Terraform:/src" aquasec/tfsec:${{ env.tfsecVersion }}  --format sarif /src/key-vault > ${{ github.workspace }}/src/Terraform/key-vault/tfsec-key-vault.sarif
+          docker run --rm -v "${{ github.workspace }}/src/Terraform:/src" aquasec/tfsec:${{ env.tfsecVersion }}  --format sarif /src/container-registry > ${{ github.workspace }}/src/Terraform/container-registry/tfsec-container-registry.sarif
 
       - name: Upload tflint SARIF file
         uses: github/codeql-action/upload-sarif@v1
         with:
-          sarif_file: ./src/Terraform/key-vault/tflint-key-vault.sarif
+          sarif_file: ./src/Terraform/container-registry/tflint-container-registry.sarif
 
       - name: Upload tfsec SARIF file
         uses: github/codeql-action/upload-sarif@v1
         with:
-          sarif_file: ./src/Terraform/key-vault/tfsec-key-vault.sarif
+          sarif_file: ./src/Terraform/container-registry/tfsec-container-registry.sarif
 
       - name: Invalid value/syntax
         if: steps.tflint-execution.outcome != 'success'
