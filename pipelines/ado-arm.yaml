@@ -50,6 +50,7 @@ stages:
       inputs:
         templatelocation: '$(System.DefaultWorkingDirectory)\src\ARM\AzureSecurityCenter\*'
         resultLocation: '$(System.DefaultWorkingDirectory)\results'
+        skipTests: 'Parameters Must Be Referenced'
         allTemplatesMain: false
         cliOutputResults: true
       condition: always()
