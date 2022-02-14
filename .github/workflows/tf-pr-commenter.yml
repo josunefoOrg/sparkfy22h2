@@ -1,0 +1,52 @@
+name: tf-pr-commenter
+on:
+  pull_request:
+
+env:
+  tflintRulesExcluded: ""
+  tfLintAzureRulesVersion: v0.14.0
+  tfLintVersion: v0.34.1
+  tfsecVersion: v1.1.5
+
+jobs:
+  terraform:
+    name: Terraform PR commenter
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone repo
+        uses: actions/checkout@master
+
+      - name: Setup tflint AzureRM plugin
+        working-directory: ${{ github.workspace }}/src/Terraform/key-vault
+        run: |
+            echo 'plugin "azurerm" {' >.tflint.hcl
+            echo '  enabled = true' >>.tflint.hcl
+            echo '}' >>.tflint.hcl
+            mkdir -p .tflint.d/plugins
+            cd .tflint.d/plugins
+            
+            curl -L "https://github.com/terraform-linters/tflint-ruleset-azurerm/releases/download/${{ env.tfLintAzureRulesVersion }}/tflint-ruleset-azurerm_linux_amd64.zip" -o tflint-AzRuleset.zip
+            unzip tflint-AzRuleset.zip
+            rm tflint-AzRuleset.zip
+            chmod +x tflint-ruleset-azurerm
+
+      - name: tflint
+        uses: reviewdog/action-tflint@master
+        with:
+          github_token: ${{ github.token }}
+          working_directory: "src/Terraform/key-vault"
+          reporter: github-pr-review
+          fail_on_error: "true"
+          tflint_version: "${{ env.tfLintVersion }}"
+          tflint_rulesets: "azurerm"
+          flags: "--module"
+
+      - name: tfsec
+        uses: tfsec/tfsec-pr-commenter-action@main
+        if: always()
+        with:
+          tfsec_args: --soft-fail
+          tfsec_version: ${{ env.tfsecVersion }}
+          github_token: ${{ github.token }}
+          working_directory: ./src/Terraform
