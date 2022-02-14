@@ -24,6 +24,6 @@ jobs:
         with:
           sarif_file: ./src/Terraform/key-vault/tfsec-key-vault.sarif
 
-      - ${{ if steps.tfsec-execution.outcome != 'success' }}:
-        - name: There are vulnerabilities
-          run: echo 'Deployment to prod is forbidden'
+      - name: There are vulnerabilities
+        if: steps.tfsec-execution.outcome != 'success'
+        run: echo 'Deployment to prod is forbidden'
