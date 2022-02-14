@@ -5,10 +5,6 @@ trigger:
 pool:
   vmImage: windows-2022
 
-variables:
-  imageName: python
-  trivyVersion: 0.20.1
-
 stages:
 - stage: Scan
   displayName: Scan vulnerabilities for ARM templates
@@ -33,12 +29,17 @@ stages:
         script: |
           npm install snyk@latest -g
           snyk auth $(SnykAPIConnection)
-          write-host ">>>> Running test"
           snyk iac test ./src/ARM/AzureSecurityCenter/deploy.json --json-file-output=./SnykReport-AzureSecurityCenter.json
-          write-host ">>>>> Publishing test results"
+          write-host "test"
+
+    - task: CmdLine@2
+      displayName: Transform test to HTML
+      inputs:
+        workingDirectory: $(Build.SourcesDirectory)
+        script: |
           mkdir HTML && cd HTML
           npm install snyk-to-html -g
-          snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.json -o ./SnykReport-AzureSecurityCenter.html
+          snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.json -o SnykReport-AzureSecurityCenter.html
 
     - task: PublishBuildArtifacts@1
       displayName: Publish HTML reports as artifacts
@@ -72,7 +73,7 @@ stages:
         location: 'westeurope'
         resourceGroupName: 'SPARKFY22H2-ARM'
         templateLocation: 'Linked artifact'
-        csmFile: '$(System.ArtifactsDirectory)/src/ARM/AzureSecurityCenter/deploy.json'
+        csmFile: '$(System.DefaultWorkingDirectory)/src/ARM/AzureSecurityCenter/deploy.json'
         deploymentMode: 'Incremental'
         deploymentName: 'deploySecurityCenter'
         deploymentOutputs: 'armOutput'
