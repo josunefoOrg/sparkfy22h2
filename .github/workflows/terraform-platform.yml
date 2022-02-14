@@ -20,8 +20,9 @@ jobs:
     name: "Test and deploy infra"
     steps:
       - uses: actions/checkout@v2
-      - name: tflint  
-        script: |
+      - name: tflint
+        id: tflint-execution
+        run: |
             tfLintRulesExcluded=`for i in $(echo ${{ env.tflintRulesExcluded }} | sed "s/,/ /g"); do echo "--disable-rule=$i"; done`
   
             echo tflint --module --loglevel=debug $tfLintRulesExcluded
