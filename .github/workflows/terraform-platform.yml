@@ -16,7 +16,7 @@ jobs:
       - name: tfsec
         uses: tfsec/tfsec-sarif-action@master
         with:
-          sarif_file: tfsec-key-vault.sarif
+          sarif_file: ./src/Terraform/key-vault/tfsec-key-vault.sarif
           working_directory: ./src/Terraform/key-vault
           tfsec_version: v1.1.5
           tfsec_args: --verbose
@@ -24,4 +24,4 @@ jobs:
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v1
         with:
-          sarif_file: tfsec-key-vault.sarif
+          sarif_file: ./src/Terraform/key-vault/tfsec-key-vault.sarif
