@@ -11,15 +11,23 @@ jobs:
       - name: Clone repo
         uses: actions/checkout@master
 
-      - name: tflint
-        uses: reviewdog/action-tflint@master
+      - uses: actions/cache@v2
+        name: Cache plugin dir
         with:
-          github_token: ${{ github.token }}
-          working_directory: ./src/Terraform/key-vault
-          reporter: github-pr-review
+          path: ~/.tflint.d/plugins
+          key: ubuntu-latest-tflint-${{ hashFiles('.tflint.hcl') }}
+
+      - uses: terraform-linters/setup-tflint@v1
+        name: Setup TFLint
+        with:
           tflint_version: v0.34.1
-          tflint_rulesets: azurerm
-          flags: --module
+
+      - name: tflint
+        continue-on-error: true
+        working-directory: ${{ github.workspace }}/src/Terraform/key-vault
+        run: |
+          tflint --init
+          tflint -f compact --module
 
       - name: tfsec
         uses: tfsec/tfsec-pr-commenter-action@main
