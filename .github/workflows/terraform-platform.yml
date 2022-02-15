@@ -14,13 +14,18 @@ env:
   tfsecVersion: v1.1.5
 
 jobs:
-  build_source_code_dev:
-    environment: "Dev"
+  deploy_to_prod:
+    environment: "CD"
     runs-on: ubuntu-latest
-    name: "Test and deploy infra"
+    name: "Continuous Delivery"
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
     steps:
       - uses: actions/checkout@v2
-      - name: tflint
+      - name: tflint acr
         id: tflint-execution
         continue-on-error: true
         working-directory: ${{ github.workspace }}/src/Terraform/container-registry
@@ -41,7 +46,7 @@ jobs:
   
             docker run --rm -v "${{ github.workspace }}/src/Terraform:/data" -w="/data/container-registry" -t ghcr.io/terraform-linters/tflint:${{ env.tfLintVersion }} -f sarif --module $tfLintRulesExcluded > ${{ github.workspace }}/src/Terraform/container-registry/tflint-container-registry.sarif
 
-      - name: tfsec
+      - name: tfsec acr
         id: tfsec-execution
         continue-on-error: true
         run: |
@@ -57,10 +62,8 @@ jobs:
         with:
           sarif_file: ./src/Terraform/container-registry/tfsec-container-registry.sarif
 
-      - name: Invalid value/syntax
-        if: steps.tflint-execution.outcome != 'success'
-        run: echo 'Deployment to prod is forbidden, fix the value/syntax provided'
-
-      - name: There are vulnerabilities
-        if: steps.tfsec-execution.outcome != 'success'
-        run: echo 'Deployment to prod is forbidden, vulnerabilities found'
+      # - name: ACR TF Deployment
+      #   if: steps.tflint-execution.outcome != 'success' && steps.tfsec-execution.outcome != 'success'
+      #   run: |
+      #     terraform init
+      #     terraform validate

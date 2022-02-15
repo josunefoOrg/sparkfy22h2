@@ -1,9 +1,19 @@
-variable "acrResourceName" {
+variable "aasResourceName" {
   description = "Specifies the name of the Azure resource"
   type        = string
 }
 
-variable "umiResourceName" {
+variable "aspResourceName" {
+  description = "Specifies the name of the Azure resource"
+  type        = string
+}
+
+variable "umiName" {
+  description = "Specifies the name of the Azure resource"
+  type        = string
+}
+
+variable "acrName" {
   description = "Specifies the name of the Azure resource"
   type        = string
 }
@@ -11,5 +21,4 @@ variable "umiResourceName" {
 variable "resourceGroup" {
   description = "Resource group where the resource will be deployed"
   type        = string
-  default     = "SPARKFY22H2-TF"
 }

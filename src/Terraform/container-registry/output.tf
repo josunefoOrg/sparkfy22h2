@@ -1,9 +1,17 @@
-output "name" {
+output "acrName" {
   value       = azurerm_container_registry.acr.name
   description = "Name of the created resource"
 }
-output "resourceId" {
+output "acrResourceId" {
   value       = azurerm_container_registry.acr.id
+  description = "Id of the created resource"
+}
+output "umiName" {
+  value       = azurerm_user_assigned_identity.umi.name
+  description = "Name of the created resource"
+}
+output "umiResourceId" {
+  value       = azurerm_user_assigned_identity.umi.id
   description = "Id of the created resource"
 }
 output "resourceGroup" {
