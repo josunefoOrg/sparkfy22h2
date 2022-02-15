@@ -6,7 +6,12 @@ param name string = 'jojosparkstg'
 param location string = resourceGroup().location
 
 @description('Optional. Array of role assignment objects that contain the \'roleDefinitionIdOrName\' and \'principalId\' to define RBAC role assignments on this resource. In the roleDefinitionIdOrName attribute, you can provide either the display name of the role definition, or it\'s fully qualified ID in the following format: \'/providers/Microsoft.Authorization/roleDefinitions/c2f4ef07-c644-48eb-af81-4b1b4947fb11\'')
-param roleAssignments array = []
+param roleAssignments array = [
+  {
+    roleDefinitionIdOrName: 'Storage Blob Data Contributor'
+    principalId: '0fb28633-cd4f-44cc-bfd0-672cad91a2e7d'
+  }
+]
 
 @description('Optional. Enables system assigned managed identity on the resource.')
 param systemAssignedIdentity bool = false
@@ -63,7 +68,14 @@ param networkAcls object = {}
 param requireInfrastructureEncryption bool = true
 
 @description('Optional. Blob service and containers to deploy')
-param blobServices object = {}
+param blobServices object = {
+  containers: [
+    {
+      name: 'tfstate'
+      storageAccountName: 'jojosparkstg'
+    }
+  ]
+}
 
 @description('Optional. File service and shares to deploy')
 param fileServices object = {}
