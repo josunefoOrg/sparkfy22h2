@@ -62,7 +62,7 @@ stages:
       condition: always()
 
     - task: AzureResourceManagerTemplateDeployment@3
-      displayName: 'Azure Deployment: Storage Account & Function App'
+      displayName: 'Azure Deployment: Security Center'
       inputs:
         deploymentScope: 'Resource Group'
         azureResourceManagerConnection: 'josunefoConnection'
