@@ -1,4 +1,4 @@
-name: "Bicep Platform Workflow"
+name: "Deploy backend and frontend workflow"
 
 on:
   repository_dispatch:
@@ -85,5 +85,7 @@ jobs:
           failOnStdErr: false
 
   deploy_frontend_infra:
+    name: "Deploy backend - Bicep"
+    environment: "Continuous Delivery"
     needs: deploy_backend_infra
     uses: josunefoOrg/sparkfy22h2/.github/workflows/terraform-platform.yml@main
