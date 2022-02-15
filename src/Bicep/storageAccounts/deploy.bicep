@@ -9,7 +9,9 @@ param location string = resourceGroup().location
 param roleAssignments array = [
   {
     roleDefinitionIdOrName: 'Storage Blob Data Contributor'
-    principalId: '0fb28633-cd4f-44cc-bfd0-672cad91a2e7d'
+    principalIds: [
+      '0fb28633-cd4f-44cc-bfd0-672cad91a2e7d'
+    ]
   }
 ]
 
