@@ -17,6 +17,7 @@ env:
 jobs:
   deploy_frontend_infra:
     runs-on: ubuntu-latest
+    environment: "Continuous Delivery"
     env:
       ARM_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
       ARM_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
