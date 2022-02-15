@@ -7,6 +7,12 @@ on:
     paths:
     - "src/Terraform/**"
 
+  # workflow chain
+  workflow_run:
+    workflows: ["Bicep Platform Workflow"]
+    type:
+      - complete
+
 env:
   tflintRulesExcluded: ""
   tfLintAzureRulesVersion: v0.14.0
