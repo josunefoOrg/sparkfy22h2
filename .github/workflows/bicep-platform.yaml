@@ -8,10 +8,10 @@ on:
     paths:
     - "src/Bicep/**"
 jobs:
-  build_source_code_dev:
-    environment: "Dev"
+  deploy_backend_infra:
+    environment: "Continuous Integration"
     runs-on: ubuntu-latest
-    name: "Deploy Infrastructure DEV"
+    name: "Deploy backend - Bicep"
     steps:
       - name: "Checkout"
         uses: actions/checkout@v2
@@ -48,7 +48,6 @@ jobs:
           write-output ">>>> arm-ttk  storageAccounts analysis"
           Test-AzTemplate -TemplatePath ./src/Bicep/storageAccounts/azuredeploy.json -ErrorAction continue
 
-
       - name: SNYK - Run Snyk to check key vault ARM template file for issues
         continue-on-error: true
         uses: snyk/actions/iac@master
@@ -84,3 +83,7 @@ jobs:
           resourceGroupName: "SPARKFY22H2-BICEP"
           template: ./src/Bicep/storageAccounts/deploy.bicep
           failOnStdErr: false
+
+  deploy_frontend_infra:
+    needs: deploy_backend_infra
+    uses: josunefoOrg/sparkfy22h2/.github/workflows/terraform-platform.yml@main

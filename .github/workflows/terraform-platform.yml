@@ -1,17 +1,12 @@
 name: "TF test Workflow"
 
 on:
+  workflow_call:
   workflow_dispatch:
   push:
     branches: [main, users/**]
     paths:
     - "src/Terraform/**"
-
-  # workflow chain
-  workflow_run:
-    workflows: ["Bicep Platform Workflow"]
-    type:
-      - complete
 
 env:
   tflintRulesExcluded: ""
@@ -20,8 +15,8 @@ env:
   tfsecVersion: v1.1.5
 
 jobs:
-  deploy_to_prod:
-    environment: "CD"
+  deploy_frontend_infra:
+    environment: "Deploy base frontend - TF"
     runs-on: ubuntu-latest
     name: "Continuous Delivery"
     env:
