@@ -15,55 +15,54 @@ env:
   tfsecVersion: v1.1.5
 
 jobs:
-  deploy_frontend_infra:
-    runs-on: ubuntu-latest
-    environment: "Continuous Delivery"
-    env:
-      ARM_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
-      ARM_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      ARM_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
-    steps:
-      - uses: actions/checkout@v2
-      - name: tflint acr
-        id: tflint-execution
-        continue-on-error: true
-        working-directory: ${{ github.workspace }}/src/Terraform/container-registry
-        run: |
-            tfLintRulesExcluded=`for i in $(echo ${{ env.tflintRulesExcluded }} | sed "s/,/ /g"); do echo "--disable-rule=$i"; done`
-  
-            echo tflint --module -f sarif $tfLintRulesExcluded
-            echo 'plugin "azurerm" {' >.tflint.hcl
-            echo '  enabled = true' >>.tflint.hcl
-            echo '}' >>.tflint.hcl
-            mkdir -p .tflint.d/plugins
-            cd .tflint.d/plugins
-            
-            curl -L "https://github.com/terraform-linters/tflint-ruleset-azurerm/releases/download/${{ env.tfLintAzureRulesVersion }}/tflint-ruleset-azurerm_linux_amd64.zip" -o tflint-AzRuleset.zip
-            unzip tflint-AzRuleset.zip
-            rm tflint-AzRuleset.zip
-            chmod +x tflint-ruleset-azurerm
-  
-            docker run --rm -v "${{ github.workspace }}/src/Terraform:/data" -w="/data/container-registry" -t ghcr.io/terraform-linters/tflint:${{ env.tfLintVersion }} -f sarif --module $tfLintRulesExcluded > ${{ github.workspace }}/src/Terraform/container-registry/tflint-container-registry.sarif
+  runs-on: ubuntu-latest
+  environment: "Continuous Delivery"
+  env:
+    ARM_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+    ARM_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+    ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    ARM_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+  steps:
+    - uses: actions/checkout@v2
+    - name: tflint acr
+      id: tflint-execution
+      continue-on-error: true
+      working-directory: ${{ github.workspace }}/src/Terraform/container-registry
+      run: |
+          tfLintRulesExcluded=`for i in $(echo ${{ env.tflintRulesExcluded }} | sed "s/,/ /g"); do echo "--disable-rule=$i"; done`
 
-      - name: tfsec acr
-        id: tfsec-execution
-        continue-on-error: true
-        run: |
-          docker run --rm -v "${{ github.workspace }}/src/Terraform:/src" aquasec/tfsec:${{ env.tfsecVersion }}  --format sarif /src/container-registry > ${{ github.workspace }}/src/Terraform/container-registry/tfsec-container-registry.sarif
+          echo tflint --module -f sarif $tfLintRulesExcluded
+          echo 'plugin "azurerm" {' >.tflint.hcl
+          echo '  enabled = true' >>.tflint.hcl
+          echo '}' >>.tflint.hcl
+          mkdir -p .tflint.d/plugins
+          cd .tflint.d/plugins
+          
+          curl -L "https://github.com/terraform-linters/tflint-ruleset-azurerm/releases/download/${{ env.tfLintAzureRulesVersion }}/tflint-ruleset-azurerm_linux_amd64.zip" -o tflint-AzRuleset.zip
+          unzip tflint-AzRuleset.zip
+          rm tflint-AzRuleset.zip
+          chmod +x tflint-ruleset-azurerm
 
-      - name: Upload tflint SARIF file
-        uses: github/codeql-action/upload-sarif@v1
-        with:
-          sarif_file: ./src/Terraform/container-registry/tflint-container-registry.sarif
+          docker run --rm -v "${{ github.workspace }}/src/Terraform:/data" -w="/data/container-registry" -t ghcr.io/terraform-linters/tflint:${{ env.tfLintVersion }} -f sarif --module $tfLintRulesExcluded > ${{ github.workspace }}/src/Terraform/container-registry/tflint-container-registry.sarif
 
-      - name: Upload tfsec SARIF file
-        uses: github/codeql-action/upload-sarif@v1
-        with:
-          sarif_file: ./src/Terraform/container-registry/tfsec-container-registry.sarif
+    - name: tfsec acr
+      id: tfsec-execution
+      continue-on-error: true
+      run: |
+        docker run --rm -v "${{ github.workspace }}/src/Terraform:/src" aquasec/tfsec:${{ env.tfsecVersion }}  --format sarif /src/container-registry > ${{ github.workspace }}/src/Terraform/container-registry/tfsec-container-registry.sarif
 
-      # - name: ACR TF Deployment
-      #   if: steps.tflint-execution.outcome != 'success' && steps.tfsec-execution.outcome != 'success'
-      #   run: |
-      #     terraform init
-      #     terraform validate
+    - name: Upload tflint SARIF file
+      uses: github/codeql-action/upload-sarif@v1
+      with:
+        sarif_file: ./src/Terraform/container-registry/tflint-container-registry.sarif
+
+    - name: Upload tfsec SARIF file
+      uses: github/codeql-action/upload-sarif@v1
+      with:
+        sarif_file: ./src/Terraform/container-registry/tfsec-container-registry.sarif
+
+    # - name: ACR TF Deployment
+    #   if: steps.tflint-execution.outcome != 'success' && steps.tfsec-execution.outcome != 'success'
+    #   run: |
+    #     terraform init
+    #     terraform validate

@@ -85,6 +85,6 @@ jobs:
           failOnStdErr: false
 
   deploy_frontend_infra:
-    name: "Deploy backend - Bicep"
+    name: "Deploy frontend - TF"
     needs: deploy_backend_infra
     uses: josunefoOrg/sparkfy22h2/.github/workflows/terraform-platform.yml@main
