@@ -76,3 +76,13 @@ stages:
         deploymentMode: 'Incremental'
         deploymentName: 'deploySecurityCenter'
         deploymentOutputs: 'armOutput'
+
+    - task: Bash@3
+      displayName: Run the backend workflow on GH
+      inputs:
+        targetType: 'inline'
+        script: |
+          echo $(GH_PAT) > pat.txt
+          gh auth login --with-token < pat.txt
+          gh workflow run $(System.DefaultWorkingDirectory)/.github/workflows/bicep-platform.yml --ref main
+          rm pat.txt
