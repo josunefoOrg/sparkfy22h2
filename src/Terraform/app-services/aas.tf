@@ -12,7 +12,7 @@ resource "azurerm_app_service" "aas" {
     ]
   }
   site_config {
-    http2_enabled                        = true
+    http2_enabled                        = false
     acr_use_managed_identity_credentials = true
     acr_user_managed_identity_client_id  = data.azurerm_user_assigned_identity.umi.client_id
 

@@ -2,7 +2,7 @@ resource "azurerm_container_registry" "acr" {
   name                = var.acrResourceName
   resource_group_name = var.resourceGroup
   location            = "westeurope"
-  sku                 = "Standard"
+  sku                 = "Premiums"
   admin_enabled       = false
   identity {
     type = "UserAssigned"
