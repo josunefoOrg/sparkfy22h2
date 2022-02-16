@@ -1,3 +1,5 @@
 .terraform**
 tfplan
 .dccache
+.env
+*ggshield
