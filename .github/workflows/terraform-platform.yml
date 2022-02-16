@@ -12,13 +12,13 @@ env:
   imageName: sparkfy22ml
 
 jobs:
-  deploy_frontend_infra:
+  check_acr_vulns:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
       - name: tflint acr
-        id: tflint-execution
+        id: tflint-execution-acr
         continue-on-error: true
         working-directory: ${{ github.workspace }}/src/Terraform/container-registry
         run: |
@@ -39,10 +39,10 @@ jobs:
             docker run --rm -v "${{ github.workspace }}/src/Terraform:/data" -w="/data/container-registry" -t ghcr.io/terraform-linters/tflint:${{ env.tfLintVersion }} -f sarif --module $tfLintRulesExcluded > ${{ github.workspace }}/src/Terraform/container-registry/tflint-container-registry.sarif
 
       - name: tfsec acr
-        id: tfsec-execution
+        id: tfsec-execution-acr
         continue-on-error: true
         run: |
-          docker run --rm -v "${{ github.workspace }}/src/Terraform:/src" aquasec/tfsec:${{ env.tfsecVersion }}  --format sarif /src/container-registry > ${{ github.workspace }}/src/Terraform/container-registry/tfsec-container-registry.sarif
+          docker run --rm -v "${{ github.workspace }}/src/Terraform:/src" aquasec/tfsec:${{ env.tfsecVersion }} --format sarif /src/container-registry > ${{ github.workspace }}/src/Terraform/container-registry/tfsec-container-registry.sarif
 
       - name: Upload tflint SARIF file
         uses: github/codeql-action/upload-sarif@v1
@@ -54,13 +54,61 @@ jobs:
         with:
           sarif_file: ./src/Terraform/container-registry/tfsec-container-registry.sarif
 
+  check_aas_vulns:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: tflint app services
+        id: tflint-execution-aas
+        continue-on-error: true
+        working-directory: ${{ github.workspace }}/src/Terraform/app-services
+        run: |
+            tfLintRulesExcluded=`for i in $(echo ${{ env.tflintRulesExcluded }} | sed "s/,/ /g"); do echo "--disable-rule=$i"; done`
+  
+            echo tflint --module -f sarif $tfLintRulesExcluded
+            echo 'plugin "azurerm" {' >.tflint.hcl
+            echo '  enabled = true' >>.tflint.hcl
+            echo '}' >>.tflint.hcl
+            mkdir -p .tflint.d/plugins
+            cd .tflint.d/plugins
+            
+            curl -L "https://github.com/terraform-linters/tflint-ruleset-azurerm/releases/download/${{ env.tfLintAzureRulesVersion }}/tflint-ruleset-azurerm_linux_amd64.zip" -o tflint-AzRuleset.zip
+            unzip tflint-AzRuleset.zip
+            rm tflint-AzRuleset.zip
+            chmod +x tflint-ruleset-azurerm
+  
+            docker run --rm -v "${{ github.workspace }}/src/Terraform:/data" -w="/data/app-services" -t ghcr.io/terraform-linters/tflint:${{ env.tfLintVersion }} -f sarif --module $tfLintRulesExcluded > ${{ github.workspace }}/src/Terraform/app-services/tflint-app-services.sarif
+
+      - name: tfsec app services
+        id: tfsec-execution-aas
+        continue-on-error: true
+        run: |
+          docker run --rm -v "${{ github.workspace }}/src/Terraform:/src" aquasec/tfsec:${{ env.tfsecVersion }} --format sarif /src/app-services > ${{ github.workspace }}/src/Terraform/app-services/tfsec-app-services.sarif
+
+      - name: Upload tflint aas SARIF file
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: ./src/Terraform/app-services/tflint-app-services.sarif
+
+      - name: Upload tfsec aas SARIF file
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: ./src/Terraform/app-services/tfsec-app-services.sarif
+
+  deploy_frontend:
+    needs: [check_acr_vulns, check_aas_vulns]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: ACR TF Deployment
-        if: steps.tflint-execution.outcome == 'success' && steps.tfsec-execution.outcome == 'success'
+        if: jobs.check_acr_vulns.steps.tflint-execution-acr.outcome == 'success' && jobs.check_acr_vulns.steps.tfsec-execution-acr.outcome == 'success'
         working-directory: ./src/Terraform/container-registry
         run: |
           export ARM_CLIENT_ID="${{ secrets.AZURE_AD_CLIENT_ID }}"
@@ -77,26 +125,19 @@ jobs:
         working-directory: ./src/Docker
         run: |
           docker build -t ${{ env.imageName }}:${{ github.run_number }} -f Dockerfile .
-          docker tag "${{ env.imageName }}:${{ github.run_number }}" "jojoacrspark.azurecr.io/jojoacrspark/${{ env.imageName }}:${{ github.run_number }}"
-
-      - name: Run trivy scan the docker image
-        run: |
-            docker run \
-            --rm -v /var/run/docker.sock:/var/run/docker.sock -v $HOME:/root/.cache/ ghcr.io/aquasecurity/trivy:latest image \
-            --severity MEDIUM,HIGH,CRITICAL \
-            jojoacrspark.azurecr.io/jojoacrspark/${{ env.imageName }}:${{ github.run_number }}
+          docker tag "${{ env.imageName }}:${{ github.run_number }}" "jojoacrspark.azurecr.io/jojoacrspark/${{ env.imageName }}:latest"
 
       - uses: Azure/container-scan@v0 
         name: Scan image with Defender
         id: container-scan
         continue-on-error: true
         with:
-          image-name: jojoacrspark.azurecr.io/jojoacrspark/${{ env.imageName }}:${{ github.run_number }}
+          image-name: jojoacrspark.azurecr.io/jojoacrspark/${{ env.imageName }}:latest
 
       - name: Push Docker image
         run: |
             az acr login -n jojoacrspark
-            docker push jojoacrspark.azurecr.io/jojoacrspark/${{ env.imageName }}:${{ github.run_number }}
+            docker push jojoacrspark.azurecr.io/jojoacrspark/${{ env.imageName }}:latest
 
       - name: Post logs to appinsights
         uses: Azure/publish-security-assessments@v0
@@ -105,3 +146,17 @@ jobs:
           scan-results-path: ${{ steps.container-scan.outputs.scan-report-path }}
           connection-string: ${{ secrets.AZ_APPINSIGHTS_CONNECTION_STRING }}
           subscription-token: ${{ secrets.AZ_SUBSCRIPTION_TOKEN }}
+
+      - name: App Services TF Deployment
+        if: jobs.check_aas_vulns.steps.tflint-execution-aas.outcome == 'success' && jobs.check_aas_vulns.steps.tfsec-execution-aas.outcome == 'success'
+        working-directory: ./src/Terraform/app-services
+        run: |
+          export ARM_CLIENT_ID="${{ secrets.AZURE_AD_CLIENT_ID }}"
+          export ARM_CLIENT_SECRET="${{ secrets.AZURE_AD_CLIENT_SECRET }}"
+          export ARM_SUBSCRIPTION_ID="${{ secrets.ARM_SUBSCRIPTION_ID }}"
+          export ARM_TENANT_ID="${{ secrets.AZURE_AD_TENANT_ID }}"
+          
+          terraform init
+          terraform validate
+          terraform plan -out tfplan
+          terraform apply --auto-approve tfplan
