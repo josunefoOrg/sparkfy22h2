@@ -27,7 +27,7 @@ stages:
         script: |
           npm install -g snyk
           snyk auth --token $(SnykAPIConnection)
-          snyk iac test ./src/ARM/AzureSecurityCenter/deploy.json --severity-threshold=medium --json-file-output=./SnykReport-AzureSecurityCenter.json
+          snyk iac test ./src/ARM/AzureSecurityCenter/deploy.json --severity-threshold=medium --json-file-output=$(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.json
           if($LASTEXITCODE -eq 1){
             Write-Host "##vso[task.setvariable variable=snykTestPassed]false"
           }
@@ -41,7 +41,7 @@ stages:
         script: |
           mkdir HTML
           npm install -g snyk-to-html
-          snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.json -o ./HTML/SnykReport-AzureSecurityCenter.html
+          snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.json -o $(Build.SourcesDirectory)/HTML/SnykReport-AzureSecurityCenter.html
 
 
     - task: PublishBuildArtifacts@1
@@ -73,7 +73,7 @@ stages:
       displayName: 'Azure Deployment: Security Center'
       inputs:
         deploymentScope: 'Subscription'
-        azureResourceManagerConnection: 'josunefoConnection'
+        azureResourceManagerConnection: 'JordiSubConn'
         subscriptionId: 'ed29c799-3b06-4306-971a-202c3c2d29a9'
         action: 'Create Or Update Resource Group'
         location: 'westeurope'
