@@ -82,8 +82,10 @@ stages:
       displayName: Run the backend workflow on GH
       inputs:
         targetType: 'inline'
+        workingDirectory: $(Build.SourcesDirectory)
         script: |
           echo $(GH_PAT) > pat.txt
           gh auth login --with-token < pat.txt
-          gh workflow run $(Build.SourcesDirectory)/.github/workflows/bicep-platform.yaml --ref main
+          ls
+          gh workflow run ./.github/workflows/bicep-platform.yaml --ref main
           rm pat.txt
