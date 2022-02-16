@@ -71,7 +71,7 @@ jobs:
         uses: azure/arm-deploy@v1
         with:
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
-          resourceGroupName: "SPARKFY22H2-BICEP"
+          resourceGroupName: "spark-jojo-demo"
           template: ./src/Bicep/vaults/deploy.bicep
           failOnStdErr: false
 
@@ -79,7 +79,7 @@ jobs:
         uses: azure/arm-deploy@v1
         with:
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
-          resourceGroupName: "SPARKFY22H2-BICEP"
+          resourceGroupName: "spark-jojo-demo"
           template: ./src/Bicep/storageAccounts/deploy.bicep
           failOnStdErr: false
 
