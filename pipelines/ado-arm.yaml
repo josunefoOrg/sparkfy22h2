@@ -23,7 +23,7 @@ stages:
         targetType: 'inline'
         script: |
           npm install -g snyk
-          snyk auth $(SnykAPIConnection)
+          snyk auth --token $(SnykAPIConnection)
           snyk iac test ./src/ARM/AzureSecurityCenter/deploy.json --severity-threshold=medium --json-file-output=./SnykReport-AzureSecurityCenter.json
           write-host ">>> test completed"
 
@@ -66,12 +66,11 @@ stages:
     - task: AzureResourceManagerTemplateDeployment@3
       displayName: 'Azure Deployment: Security Center'
       inputs:
-        deploymentScope: 'Resource Group'
+        deploymentScope: 'Subscription'
         azureResourceManagerConnection: 'josunefoConnection'
         subscriptionId: 'ed29c799-3b06-4306-971a-202c3c2d29a9'
         action: 'Create Or Update Resource Group'
         location: 'westeurope'
-        resourceGroupName: 'SPARKFY22H2-ARM'
         templateLocation: 'Linked artifact'
         csmFile: '$(System.DefaultWorkingDirectory)/src/ARM/AzureSecurityCenter/deploy.json'
         csmParametersFile: '$(System.DefaultWorkingDirectory)/src/ARM/AzureSecurityCenter/Parameters/parameters.json'
