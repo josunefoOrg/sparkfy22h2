@@ -84,3 +84,10 @@ jobs:
     name: "Deploy frontend - TF"
     needs: deploy_backend_infra
     uses: josunefoOrg/sparkfy22h2/.github/workflows/terraform-platform.yml@main
+    secrets:
+        AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+        AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+        AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+        ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        AZ_APPINSIGHTS_CONNECTION_STRING: ${{ secrets.AZ_APPINSIGHTS_CONNECTION_STRING }}
+        AZ_SUBSCRIPTION_TOKEN: ${{ secrets.AZ_SUBSCRIPTION_TOKEN }}
