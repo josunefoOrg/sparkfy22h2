@@ -5,6 +5,9 @@ trigger:
 pool:
   vmImage: windows-2022
 
+variables:
+  snykTestPassed: true
+
 stages:
 - stage: Scan
   displayName: Scan vulnerabilities for ARM templates
@@ -16,27 +19,29 @@ stages:
     steps:
     - checkout: self
 
-    - task: CmdLine@2
+    - task: PowerShell@2
       displayName: Snyk-test-module
       inputs:
         workingDirectory: $(Build.SourcesDirectory)
+        targetType: 'inline'
         script: |
-          npm install snyk@latest -g
-          snyk auth $(SnykAPIConnection)
-          snyk iac test ./src/ARM/AzureSecurityCenter/deploy.json --json-file-output=./SnykReport-AzureSecurityCenter.json
-          write-host ">>> test completed"
+          npm install -g snyk
+          snyk auth --token $(SnykAPIConnection)
+          snyk iac test $(Build.SourcesDirectory)/src/ARM/AzureSecurityCenter/deploy.json --severity-threshold=medium --json-file-output=$(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.json
+          if($LASTEXITCODE -eq 1){
+            Write-Host "##vso[task.setvariable variable=snykTestPassed]false"
+          }
+      continueOnError: true
 
-
-    - task: CmdLine@2
+    - task: Bash@3
       displayName: Transform test to HTML
       inputs:
         workingDirectory: $(Build.SourcesDirectory)
+        targetType: 'inline'
         script: |
           mkdir HTML && cd HTML
-          npm install snyk-to-html -g
-          snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.json -o SnykReport-AzureSecurityCenter.html
-          write-host ">>> test completed"
-
+          npm install -g snyk-to-html
+          snyk-to-html -i ../SnykReport-AzureSecurityCenter.json -o SnykReport-AzureSecurityCenter.html
 
     - task: PublishBuildArtifacts@1
       displayName: Publish HTML reports as artifacts
@@ -45,34 +50,43 @@ stages:
         artifactName: 'htmlReports'
         publishLocation: 'Container'
         parallel: true
+      condition: succeededOrFailed()
 
     - task: RunARMTTKTests@1
       inputs:
-        templatelocation: '$(System.DefaultWorkingDirectory)\src\ARM\AzureSecurityCenter\*'
-        resultLocation: '$(System.DefaultWorkingDirectory)\results'
+        templatelocation: '$(System.DefaultWorkingDirectory)/src/ARM/AzureSecurityCenter/deploy.json'
+        resultLocation: '$(System.DefaultWorkingDirectory)/results'
         skipTests: 'Parameters Must Be Referenced'
         allTemplatesMain: false
         cliOutputResults: true
-      condition: always()
 
     - task: PublishTestResults@2
       inputs:
         testResultsFormat: 'NUnit'
-        testResultsFiles: '$(System.DefaultWorkingDirectory)\results\*-armttk.xml'
-      condition: always()
+        testResultsFiles: '$(System.DefaultWorkingDirectory)/results/*-armttk.xml'
+      condition: succeededOrFailed()
 
     - task: AzureResourceManagerTemplateDeployment@3
       displayName: 'Azure Deployment: Security Center'
       inputs:
-        deploymentScope: 'Resource Group'
-        azureResourceManagerConnection: 'josunefoConnection'
+        deploymentScope: 'Subscription'
+        azureResourceManagerConnection: 'JordiSubConn'
         subscriptionId: 'ed29c799-3b06-4306-971a-202c3c2d29a9'
         action: 'Create Or Update Resource Group'
         location: 'westeurope'
-        resourceGroupName: 'SPARKFY22H2-ARM'
         templateLocation: 'Linked artifact'
         csmFile: '$(System.DefaultWorkingDirectory)/src/ARM/AzureSecurityCenter/deploy.json'
-        csmParametersFile: '$(System.DefaultWorkingDirectory)/src/ARM/AzureSecurityCenter/parameters/parameters.json'
+        csmParametersFile: '$(System.DefaultWorkingDirectory)/src/ARM/AzureSecurityCenter/Parameters/parameters.json'
         deploymentMode: 'Incremental'
         deploymentName: 'deploySecurityCenter'
-        deploymentOutputs: 'armOutput'
+      condition: and(succeededOrFailed(), eq(variables['snykTestPassed'], true))
+
+    - task: Bash@3
+      displayName: Run the backend workflow on GH
+      inputs:
+        targetType: 'inline'
+        script: |
+          echo $(GH_PAT) > pat.txt
+          gh auth login --with-token < pat.txt
+          gh workflow run "Deploy backend and frontend workflow" --repo "josunefoOrg/sparkfy22h2" --ref main
+          rm pat.txt

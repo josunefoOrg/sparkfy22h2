@@ -6,7 +6,12 @@ terraform {
       version = ">=2.96.0"
     }
   }
-  backend "local" {}
+  backend "azurerm" {
+    storage_account_name = "jojosparkstg"
+    container_name       = "tfstate"
+    key                  = "acr.tfstate"
+    resource_group_name  = "spark-jojo-demo"
+  }
 }
 
 provider "azurerm" {

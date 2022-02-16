@@ -1,17 +1,14 @@
 name: "Deploy backend and frontend workflow"
 
 on:
-  repository_dispatch:
   workflow_dispatch:
   push:
     branches: [main, users/**]
-    paths:
-    - "src/Bicep/**"
 jobs:
   deploy_backend_infra:
-    environment: "Continuous Integration"
     runs-on: ubuntu-latest
     name: "Deploy backend - Bicep"
+    environment: Development
     steps:
       - name: "Checkout"
         uses: actions/checkout@v2
@@ -72,7 +69,7 @@ jobs:
         uses: azure/arm-deploy@v1
         with:
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
-          resourceGroupName: "SPARKFY22H2-BICEP"
+          resourceGroupName: "spark-jojo-demo"
           template: ./src/Bicep/vaults/deploy.bicep
           failOnStdErr: false
 
@@ -80,7 +77,7 @@ jobs:
         uses: azure/arm-deploy@v1
         with:
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
-          resourceGroupName: "SPARKFY22H2-BICEP"
+          resourceGroupName: "spark-jojo-demo"
           template: ./src/Bicep/storageAccounts/deploy.bicep
           failOnStdErr: false
 

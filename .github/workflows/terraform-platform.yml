@@ -1,31 +1,28 @@
-name: "TF test Workflow"
+name: "TF Template Workflow"
 
 on:
   workflow_call:
   workflow_dispatch:
-  push:
-    branches: [main, users/**]
-    paths:
-    - "src/Terraform/**"
 
 env:
   tflintRulesExcluded: ""
   tfLintAzureRulesVersion: v0.14.0
   tfLintVersion: v0.34.1
   tfsecVersion: v1.1.5
+  imageName: sparkfy22ml
 
 jobs:
-  deploy_frontend_infra:
+  check_acr_vulns:
+    name: Container Registry assessment
     runs-on: ubuntu-latest
-    env:
-      ARM_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
-      ARM_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      ARM_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+    outputs:
+      tfsecOutcome: ${{ steps.tfsec-execution-acr.outcome }}
+      tflintOutcome: ${{ steps.tflint-execution-acr.outcome }}
+
     steps:
       - uses: actions/checkout@v2
       - name: tflint acr
-        id: tflint-execution
+        id: tflint-execution-acr
         continue-on-error: true
         working-directory: ${{ github.workspace }}/src/Terraform/container-registry
         run: |
@@ -46,10 +43,10 @@ jobs:
             docker run --rm -v "${{ github.workspace }}/src/Terraform:/data" -w="/data/container-registry" -t ghcr.io/terraform-linters/tflint:${{ env.tfLintVersion }} -f sarif --module $tfLintRulesExcluded > ${{ github.workspace }}/src/Terraform/container-registry/tflint-container-registry.sarif
 
       - name: tfsec acr
-        id: tfsec-execution
+        id: tfsec-execution-acr
         continue-on-error: true
         run: |
-          docker run --rm -v "${{ github.workspace }}/src/Terraform:/src" aquasec/tfsec:${{ env.tfsecVersion }}  --format sarif /src/container-registry > ${{ github.workspace }}/src/Terraform/container-registry/tfsec-container-registry.sarif
+          docker run --rm -v "${{ github.workspace }}/src/Terraform:/src" aquasec/tfsec:${{ env.tfsecVersion }} --format sarif /src/container-registry > ${{ github.workspace }}/src/Terraform/container-registry/tfsec-container-registry.sarif
 
       - name: Upload tflint SARIF file
         uses: github/codeql-action/upload-sarif@v1
@@ -61,8 +58,114 @@ jobs:
         with:
           sarif_file: ./src/Terraform/container-registry/tfsec-container-registry.sarif
 
-      # - name: ACR TF Deployment
-      #   if: steps.tflint-execution.outcome != 'success' && steps.tfsec-execution.outcome != 'success'
-      #   run: |
-      #     terraform init
-      #     terraform validate
+  check_aas_vulns:
+    name: App Services assessment
+    runs-on: ubuntu-latest
+    outputs:
+      tfsecOutcome: ${{ steps.tfsec-execution-aas.outcome }}
+      tflintOutcome: ${{ steps.tflint-execution-aas.outcome }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: tflint app services
+        id: tflint-execution-aas
+        continue-on-error: true
+        working-directory: ${{ github.workspace }}/src/Terraform/app-services
+        run: |
+            tfLintRulesExcluded=`for i in $(echo ${{ env.tflintRulesExcluded }} | sed "s/,/ /g"); do echo "--disable-rule=$i"; done`
+  
+            echo tflint --module -f sarif $tfLintRulesExcluded
+            echo 'plugin "azurerm" {' >.tflint.hcl
+            echo '  enabled = true' >>.tflint.hcl
+            echo '}' >>.tflint.hcl
+            mkdir -p .tflint.d/plugins
+            cd .tflint.d/plugins
+            
+            curl -L "https://github.com/terraform-linters/tflint-ruleset-azurerm/releases/download/${{ env.tfLintAzureRulesVersion }}/tflint-ruleset-azurerm_linux_amd64.zip" -o tflint-AzRuleset.zip
+            unzip tflint-AzRuleset.zip
+            rm tflint-AzRuleset.zip
+            chmod +x tflint-ruleset-azurerm
+  
+            docker run --rm -v "${{ github.workspace }}/src/Terraform:/data" -w="/data/app-services" -t ghcr.io/terraform-linters/tflint:${{ env.tfLintVersion }} -f sarif --module $tfLintRulesExcluded > ${{ github.workspace }}/src/Terraform/app-services/tflint-app-services.sarif
+
+      - name: tfsec app services
+        id: tfsec-execution-aas
+        continue-on-error: true
+        run: |
+          docker run --rm -v "${{ github.workspace }}/src/Terraform:/src" aquasec/tfsec:${{ env.tfsecVersion }} --format sarif /src/app-services > ${{ github.workspace }}/src/Terraform/app-services/tfsec-app-services.sarif
+
+      - name: Upload tflint aas SARIF file
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: ./src/Terraform/app-services/tflint-app-services.sarif
+
+      - name: Upload tfsec aas SARIF file
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: ./src/Terraform/app-services/tfsec-app-services.sarif
+
+  deploy_frontend:
+    name: Frontend deployment
+    needs: [check_acr_vulns, check_aas_vulns]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: ACR TF Deployment
+        if: needs.check_acr_vulns.outputs.tfsecOutcome == 'success' && needs.check_acr_vulns.outputs.tflintOutcome == 'success'
+        working-directory: ./src/Terraform/container-registry
+        run: |
+          export ARM_CLIENT_ID="${{ secrets.AZURE_AD_CLIENT_ID }}"
+          export ARM_CLIENT_SECRET="${{ secrets.AZURE_AD_CLIENT_SECRET }}"
+          export ARM_SUBSCRIPTION_ID="${{ secrets.ARM_SUBSCRIPTION_ID }}"
+          export ARM_TENANT_ID="${{ secrets.AZURE_AD_TENANT_ID }}"
+          
+          terraform init
+          terraform validate
+          terraform plan -out tfplan
+          terraform apply --auto-approve tfplan
+
+      - name: Build docker Tensorflow model
+        working-directory: ./src/Docker
+        run: |
+          docker build -t ${{ env.imageName }}:${{ github.run_number }} -f Dockerfile .
+          docker tag "${{ env.imageName }}:${{ github.run_number }}" "jojoacrspark.azurecr.io/jojoacrspark/${{ env.imageName }}:latest"
+
+      - uses: Azure/container-scan@v0 
+        name: Scan image with Defender
+        id: container-scan
+        continue-on-error: true
+        with:
+          image-name: jojoacrspark.azurecr.io/jojoacrspark/${{ env.imageName }}:latest
+
+      - name: Push Docker image
+        run: |
+            az acr login -n jojoacrspark
+            docker push jojoacrspark.azurecr.io/jojoacrspark/${{ env.imageName }}:latest
+
+      - name: Post logs to appinsights
+        uses: Azure/publish-security-assessments@v0
+        with:
+          artifact-type: containerImage
+          scan-results-path: ${{ steps.container-scan.outputs.scan-report-path }}
+          connection-string: ${{ secrets.AZ_APPINSIGHTS_CONNECTION_STRING }}
+          subscription-token: ${{ secrets.AZ_SUBSCRIPTION_TOKEN }}
+
+      - name: App Services TF Deployment
+        if: needs.check_aas_vulns.outputs.tfsecOutcome != 'success' && needs.check_aas_vulns.outputs.tflintOutcome == 'success' # skipping tfsec for demo purposes
+        working-directory: ./src/Terraform/app-services
+        run: |
+          export ARM_CLIENT_ID="${{ secrets.AZURE_AD_CLIENT_ID }}"
+          export ARM_CLIENT_SECRET="${{ secrets.AZURE_AD_CLIENT_SECRET }}"
+          export ARM_SUBSCRIPTION_ID="${{ secrets.ARM_SUBSCRIPTION_ID }}"
+          export ARM_TENANT_ID="${{ secrets.AZURE_AD_TENANT_ID }}"
+          
+          terraform init
+          terraform validate
+          terraform plan -out tfplan
+          terraform apply --auto-approve tfplan

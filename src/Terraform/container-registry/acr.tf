@@ -13,3 +13,9 @@ resource "azurerm_container_registry" "acr" {
 
   tags = local.tags
 }
+
+resource "azurerm_role_assignment" "acrPushRole" {
+  scope                = azurerm_container_registry.acr.id
+  role_definition_name = "AcrPush"
+  principal_id         = var.spnSparkObjectId
+}
