@@ -43,7 +43,6 @@ stages:
           npm install -g snyk-to-html
           snyk-to-html -i ../SnykReport-AzureSecurityCenter.json -o SnykReport-AzureSecurityCenter.html
 
-
     - task: PublishBuildArtifacts@1
       displayName: Publish HTML reports as artifacts
       inputs:
@@ -53,7 +52,6 @@ stages:
         parallel: true
       condition: succeededOrFailed()
 
-      
     - task: RunARMTTKTests@1
       inputs:
         templatelocation: '$(System.DefaultWorkingDirectory)/src/ARM/AzureSecurityCenter/deploy.json'
@@ -61,7 +59,6 @@ stages:
         skipTests: 'Parameters Must Be Referenced'
         allTemplatesMain: false
         cliOutputResults: true
-
 
     - task: PublishTestResults@2
       inputs:
