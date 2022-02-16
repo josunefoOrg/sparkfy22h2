@@ -85,5 +85,5 @@ stages:
         script: |
           echo $(GH_PAT) > pat.txt
           gh auth login --with-token < pat.txt
-          gh workflow run $(System.DefaultWorkingDirectory)/.github/workflows/bicep-platform.yaml --ref main
+          gh workflow run $(Build.SourcesDirectory)/.github/workflows/bicep-platform.yaml --ref main
           rm pat.txt
