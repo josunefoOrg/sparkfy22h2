@@ -76,7 +76,6 @@ stages:
         deploymentMode: 'Incremental'
         deploymentName: 'deploySecurityCenter'
         deploymentOutputs: 'armOutput'
-      enabled: false
 
     - task: Bash@3
       displayName: Run the backend workflow on GH
@@ -85,6 +84,5 @@ stages:
         script: |
           echo $(GH_PAT) > pat.txt
           gh auth login --with-token < pat.txt
-          ls
           gh workflow run "Deploy backend and frontend workflow" --repo "josunefoOrg/sparkfy22h2" --ref main
           rm pat.txt

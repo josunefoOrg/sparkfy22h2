@@ -163,14 +163,6 @@
         {
             "type": "Microsoft.Security/pricings",
             "apiVersion": "2018-06-01",
-            "name": "VirtualMachines",
-            "properties": {
-                "pricingTier": "[parameters('virtualMachinesPricingTier')]"
-            }
-        },
-        {
-            "type": "Microsoft.Security/pricings",
-            "apiVersion": "2018-06-01",
             "name": "AppServices",
             "properties": {
                 "pricingTier": "[parameters('appServicesPricingTier')]"
@@ -182,14 +174,6 @@
             "name": "StorageAccounts",
             "properties": {
                 "pricingTier": "[parameters('storageAccountsPricingTier')]"
-            }
-        },
-        {
-            "type": "Microsoft.Security/pricings",
-            "apiVersion": "2018-06-01",
-            "name": "KubernetesService",
-            "properties": {
-                "pricingTier": "[parameters('kubernetesServicePricingTier')]"
             }
         },
         {
@@ -209,13 +193,5 @@
             }
         }
     ],
-    "outputs": {
-        "workspaceName": {
-            "type": "String",
-            "value": "[parameters('workspaceId')]",
-            "metadata": {
-                "description": "This is the workspaceid"
-            }
-        }
-    }
+    "outputs": {}
 }
