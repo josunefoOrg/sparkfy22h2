@@ -21,7 +21,5 @@ resource "azurerm_app_service" "aas" {
     linux_fx_version = "DOCKER|${var.acrName}.azurecr.io/jojoacrspark/sparkfy22ml:latest"
   }
 
-  #app_settings = local.env_variables
-
   tags = local.tags
 }
