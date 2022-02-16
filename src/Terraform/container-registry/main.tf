@@ -10,6 +10,7 @@ terraform {
     storage_account_name = "jojosparkstg"
     container_name       = "tfstate"
     key                  = "acr.tfstate"
+    resource_group_name  = "spark-jojo-demo"
   }
 }
 
