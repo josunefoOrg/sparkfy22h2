@@ -2,8 +2,7 @@ name: "Deploy backend and frontend workflow"
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main, users/**]
+
 jobs:
   deploy_backend_infra:
     runs-on: ubuntu-latest

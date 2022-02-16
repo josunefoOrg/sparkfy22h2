@@ -111,10 +111,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Azure Login
-        uses: azure/login@v1.4.3
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: ACR TF Deployment
         if: needs.check_acr_vulns.outputs.tfsecOutcome == 'success' && needs.check_acr_vulns.outputs.tflintOutcome == 'success'
