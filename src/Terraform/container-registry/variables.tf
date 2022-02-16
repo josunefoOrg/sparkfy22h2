@@ -15,3 +15,9 @@ variable "resourceGroup" {
   type        = string
   default     = "spark-jojo-demo"
 }
+
+variable "spnSparkObjectId" {
+  description = "Object Id of the SPN who is deploying"
+  type        = string
+  default     = "0fb28633-cd4f-44cc-bfd0-672cad91a2e7"
+}

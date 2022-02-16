@@ -9,6 +9,7 @@ env:
   tfLintAzureRulesVersion: v0.14.0
   tfLintVersion: v0.34.1
   tfsecVersion: v1.1.5
+  imageName: sparkfy22ml
 
 jobs:
   deploy_frontend_infra:
@@ -65,3 +66,43 @@ jobs:
           terraform validate
           terraform plan -out tfplan
           terraform apply --auto-approve tfplan
+
+      - name: Build docker Tensorflow model
+        working-directory: ./src/Docker
+        run: |
+          docker build -t ${{ env.imageName }}:${{ github.run_number }} -f Dockerfile .
+
+      - name: 
+        displayName: "Run trivy scan the docker image"
+        working-directory:
+        run: |
+            docker run \
+            --rm -v /var/run/docker.sock:/var/run/docker.sock -v $HOME:/root/.cache/ ghcr.io/aquasecurity/trivy:latest \
+            --severity MEDIUM,HIGH,CRITICAL \
+            ${{ env.imageName }}:${{ github.run_number }}
+
+      - uses: Azure/container-scan@v0 
+        name: Scan image with Defender
+        id: container-scan
+        continue-on-error: true
+        with:
+          image-name: jojoacrspark.azurecr.io/jojoacrspark/${{ env.imageName }}:${{ github.run_number }}
+
+      - name: Post logs to appinsights
+        uses: Azure/publish-security-assessments@v0
+        with: 
+          scan-results-path: ${{ steps.container-scan.outputs.scan-report-path }}
+          connection-string: ${{ secrets.AZ_APPINSIGHTS_CONNECTION_STRING }}
+          subscription-token: ${{ secrets.AZ_SUBSCRIPTION_TOKEN }}
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Push Docker image
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az acr login -n jojoacrspark
+            docker push jojoacrspark.azurecr.io/jojoacrspark/${{ env.imageName }}:${{ github.run_number }}
