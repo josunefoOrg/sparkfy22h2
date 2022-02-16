@@ -54,6 +54,11 @@ jobs:
         with:
           sarif_file: ./src/Terraform/container-registry/tfsec-container-registry.sarif
 
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
       - name: ACR TF Deployment
         if: steps.tflint-execution.outcome == 'success' && steps.tfsec-execution.outcome == 'success'
         working-directory: ./src/Terraform/container-registry
@@ -89,11 +94,6 @@ jobs:
           scan-results-path: ${{ steps.container-scan.outputs.scan-report-path }}
           connection-string: ${{ secrets.AZ_APPINSIGHTS_CONNECTION_STRING }}
           subscription-token: ${{ secrets.AZ_SUBSCRIPTION_TOKEN }}
-
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Push Docker image
         uses: azure/CLI@v1
