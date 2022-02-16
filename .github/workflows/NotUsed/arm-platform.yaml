@@ -1,0 +1,93 @@
+name: "ARM Platform Workflow"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, users/**]
+    paths:
+    - "src/ARM/**"
+jobs:
+  build_source_code_dev:
+    environment: "Dev"
+    runs-on: ubuntu-latest
+    name: "Deploy Infrastructure DEV"
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Azure Login
+        uses: Azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
+
+      - name: ARM-TTK - keyvault
+        uses: venura9/arm-ttk@1.0
+        with:
+          path: ./src/ARM/*
+
+      - name: SNYK - Run Snyk to check key vault ARM template file for issues
+        uses: snyk/actions/iac@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          file: ./src/ARM/AzureSecurityService/deploy.json
+
+      - name: ARM-TTK- StorageAccounts
+        uses: venura9/arm-ttk@1.0
+        with:
+          path: ./src/ARM/StorageAccounts/deploy.json
+      - name: ARM-TTK - AzureSecurityService
+        uses: venura9/arm-ttk@1.0
+        with:
+          path: ./src/ARM/AzureSecurityService/deploy.json
+      - name: ARM-TTK - WebApp
+        uses: venura9/arm-ttk@1.0
+        with:
+          path: ./src/ARM/WebApp/deploy.json
+      - name: ARM-TTK - CognitiveServices
+        uses: venura9/arm-ttk@1.0
+        with:
+          path: ./src/ARM/CognitiveServices/deploy.json
+      - name: "Deploy Key Vault"
+        id: kv
+        uses: azure/arm-deploy@v1
+        with:
+          scope: subscription
+          region: WestEurope
+          subscriptionId: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          template: ./src/ARM/KeyVault/deploy.json
+          parameters: ./src/ARM/KeyVault/parameters/parameters.json
+      - name: "Deploy Storage Account"
+        id: stg
+        uses: azure/arm-deploy@v1
+        with:
+          subscriptionId: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          resourceGroupName: "SPARKFY22H2-ARM"
+          template: ./src/ARM/StorageAccounts/deploy.json
+          parameters: ./src/ARM/StorageAccounts/parameters/parameters.json
+      - name: "Deploy Azure Security Center"
+        id: asc
+        uses: azure/arm-deploy@v1
+        with:
+          subscriptionId: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          resourceGroupName: "SPARKFY22H2-ARM"
+          template: ./src/ARM/AzureSecurityCenter/deploy.json
+          parameters: ./src/ARM/AzureSecurityCenter/parameters/parameters.json
+      - name: "Deploy Web Application"
+        id: web
+        uses: azure/arm-deploy@v1
+        with:
+          subscriptionId: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          resourceGroupName: "SPARKFY22H2-ARM"
+          template: ./src/ARM/WebApp/deploy.json
+          parameters: ./src/ARM/WebApp/parameters/parameters.json
+      - name: "Deploy Cognitive Services"
+        id: cgs
+        uses: azure/arm-deploy@v1
+        with:
+          subscriptionId: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          resourceGroupName: "SPARKFY22H2-ARM"
+          template: ./src/ARM/CognitiveServices/deploy.json
+          parameters: ./src/ARM/CognitiveServices/parameters/parameters.json

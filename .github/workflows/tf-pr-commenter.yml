@@ -1,4 +1,4 @@
-name: tf-pr-commenter
+name: TF PR Commenter
 on:
   pull_request:
 

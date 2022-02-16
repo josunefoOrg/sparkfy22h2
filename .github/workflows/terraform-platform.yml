@@ -1,4 +1,4 @@
-name: "TF test Workflow"
+name: "TF Template Workflow"
 
 on:
   workflow_call:
