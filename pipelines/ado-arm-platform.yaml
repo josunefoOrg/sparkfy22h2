@@ -1,0 +1,79 @@
+trigger:
+- develop
+- main
+
+pool:
+  vmImage: windows-2022
+
+stages:
+- stage: Scan
+  displayName: Scan vulnerabilities for ARM templates
+  jobs:
+  - job: Scan
+    displayName: Scan vulnerabilities for ARM templates
+    pool:
+      vmImage: 'windows-2022'
+    steps:
+    - checkout: self
+    - task: CmdLine@2
+      displayName: Install-Snyk-Cli
+      inputs:
+        workingDirectory: $(Build.SourcesDirectory)
+        script: |
+          npm install snyk@latest -g
+
+    - task: CmdLine@2
+      displayName: Snyk-test-module
+      inputs:
+        workingDirectory: $(Build.SourcesDirectory)
+        script: |
+          npm install snyk@latest -g
+          snyk auth $(SnykAPIConnection)
+          snyk iac test ./src/ARM/AzureSecurityCenter/deploy.json --json-file-output=./SnykReport-AzureSecurityCenter.json
+
+    - task: CmdLine@2
+      displayName: Transform test to HTML
+      inputs:
+        workingDirectory: $(Build.SourcesDirectory)
+        script: |
+          mkdir HTML && cd HTML
+          npm install snyk-to-html -g
+          snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.json -o SnykReport-AzureSecurityCenter.html
+
+    - task: PublishBuildArtifacts@1
+      displayName: Publish HTML reports as artifacts
+      inputs:
+        pathToPublish: '$(Build.SourcesDirectory)/HTML'
+        artifactName: 'htmlReports'
+        publishLocation: 'Container'
+        parallel: true
+
+    - task: RunARMTTKTests@1
+      inputs:
+        templatelocation: '$(System.DefaultWorkingDirectory)\src\ARM\AzureSecurityCenter\*'
+        resultLocation: '$(System.DefaultWorkingDirectory)\results'
+        allTemplatesMain: false
+        cliOutputResults: true
+      condition: always()
+
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFormat: 'NUnit'
+        testResultsFiles: '$(System.DefaultWorkingDirectory)\results\*-armttk.xml'
+      condition: always()
+
+    - task: AzureResourceManagerTemplateDeployment@3
+      displayName: 'Azure Deployment: Storage Account & Function App'
+      inputs:
+        deploymentScope: 'Resource Group'
+        azureResourceManagerConnection: 'josunefoConnection'
+        subscriptionId: 'ed29c799-3b06-4306-971a-202c3c2d29a9'
+        action: 'Create Or Update Resource Group'
+        location: 'westeurope'
+        resourceGroupName: 'SPARKFY22H2-ARM'
+        templateLocation: 'Linked artifact'
+        csmFile: '$(System.DefaultWorkingDirectory)/src/ARM/AzureSecurityCenter/deploy.json'
+        csmParametersFile: '$(System.DefaultWorkingDirectory)/src/ARM/AzureSecurityCenter/parameters/parameters.json'
+        deploymentMode: 'Incremental'
+        deploymentName: 'deploySecurityCenter'
+        deploymentOutputs: 'armOutput'
