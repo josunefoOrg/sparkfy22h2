@@ -14,6 +14,9 @@ env:
 jobs:
   check_acr_vulns:
     runs-on: ubuntu-latest
+    outputs:
+      tfsecOutcome: ${{ steps.tfsec-execution-acr.outcome }}
+      tflintOutcome: ${{ steps.tflint-execution-acr.outcome }}
 
     steps:
       - uses: actions/checkout@v2
@@ -56,6 +59,9 @@ jobs:
 
   check_aas_vulns:
     runs-on: ubuntu-latest
+    outputs:
+      tfsecOutcome: ${{ steps.tfsec-execution-aas.outcome }}
+      tflintOutcome: ${{ steps.tflint-execution-aas.outcome }}
 
     steps:
       - uses: actions/checkout@v2
@@ -108,7 +114,7 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: ACR TF Deployment
-        if: needs.check_acr_vulns.steps.tflint-execution-acr.outcome == 'success' && needs.check_acr_vulns.steps.tfsec-execution-acr.outcome == 'success'
+        if: ${{ needs.check_acr_vulns.outputs.tfsecOutcome }} == 'success' && ${{ needs.check_acr_vulns.outputs.tflintOutcome }} == 'success'
         working-directory: ./src/Terraform/container-registry
         run: |
           export ARM_CLIENT_ID="${{ secrets.AZURE_AD_CLIENT_ID }}"
@@ -148,7 +154,7 @@ jobs:
           subscription-token: ${{ secrets.AZ_SUBSCRIPTION_TOKEN }}
 
       - name: App Services TF Deployment
-        if: needs.check_aas_vulns.steps.tflint-execution-aas.outcome == 'success' && needs.check_aas_vulns.steps.tfsec-execution-aas.outcome == 'success'
+        if: ${{ needs.check_aas_vulns.outputs.tfsecOutcome }} == 'success' && ${{ needs.check_aas_vulns.outputs.tflintOutcome }} == 'success'
         working-directory: ./src/Terraform/app-services
         run: |
           export ARM_CLIENT_ID="${{ secrets.AZURE_AD_CLIENT_ID }}"
