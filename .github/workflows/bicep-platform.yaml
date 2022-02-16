@@ -86,6 +86,5 @@ jobs:
 
   deploy_frontend_infra:
     name: "Deploy frontend - TF"
-    environment: Production
     needs: deploy_backend_infra
     uses: josunefoOrg/sparkfy22h2/.github/workflows/terraform-platform.yml@main
