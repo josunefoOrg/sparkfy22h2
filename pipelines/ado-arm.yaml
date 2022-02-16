@@ -76,6 +76,7 @@ stages:
         deploymentMode: 'Incremental'
         deploymentName: 'deploySecurityCenter'
         deploymentOutputs: 'armOutput'
+      enabled: false
 
     - task: Bash@3
       displayName: Run the backend workflow on GH
