@@ -32,8 +32,8 @@ stages:
             Write-Host "##vso[task.setvariable variable=snykTestPassed]false"
           }
 
-          mkdir CodeLogs && cd CodeLogs
-          mv $(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.sarif .
+          mkdir CodeLogs
+          mv $(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.sarif $(Build.SourcesDirectory)/CodeLogs
       continueOnError: true
 
     - task: Bash@3
