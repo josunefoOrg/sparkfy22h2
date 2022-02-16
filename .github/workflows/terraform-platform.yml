@@ -59,6 +59,7 @@ jobs:
 
       - name: ACR TF Deployment
         if: steps.tflint-execution.outcome == 'success' && steps.tfsec-execution.outcome == 'success'
+        working-directory: ./src/Terraform/container-registry
         run: |
           terraform init
           terraform validate
