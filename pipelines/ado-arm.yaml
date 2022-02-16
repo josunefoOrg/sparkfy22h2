@@ -39,7 +39,13 @@ stages:
         workingDirectory: $(Build.SourcesDirectory)
         targetType: 'inline'
         script: |
+          echo t0
+          cd .. & ls
+          echo t1
+          cd $(Build.SourcesDirectory) && ls
           mkdir HTML && cd HTML
+          echo t2
+          ls
           npm install -g snyk-to-html
           snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.json -o SnykReport-AzureSecurityCenter.html
 
