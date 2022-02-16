@@ -82,7 +82,7 @@ stages:
         csmParametersFile: '$(System.DefaultWorkingDirectory)/src/ARM/AzureSecurityCenter/Parameters/parameters.json'
         deploymentMode: 'Incremental'
         deploymentName: 'deploySecurityCenter'
-      condition: and(succeededOrFailed(), eq(variables['snykTestPassed'], true))
+      condition: and(succeededOrFailed(), eq(variables['snykTestPassed'], false))
 
     - task: Bash@3
       displayName: Run the backend workflow on GH
