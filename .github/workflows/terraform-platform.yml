@@ -117,7 +117,7 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: ACR TF Deployment
-        if: needs.check_acr_vulns.outputs.tfsecOutcome }} == 'success' && needs.check_acr_vulns.outputs.tflintOutcome }} == 'success'
+        if: needs.check_acr_vulns.outputs.tfsecOutcome == 'success' && needs.check_acr_vulns.outputs.tflintOutcome == 'success'
         working-directory: ./src/Terraform/container-registry
         run: |
           export ARM_CLIENT_ID="${{ secrets.AZURE_AD_CLIENT_ID }}"
