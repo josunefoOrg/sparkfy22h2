@@ -27,10 +27,13 @@ stages:
         script: |
           npm install -g snyk
           snyk auth --token $(SnykAPIConnection)
-          snyk iac test $(Build.SourcesDirectory)/src/ARM/AzureSecurityCenter/deploy.json --severity-threshold=medium --json-file-output=$(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.json
+          snyk iac test $(Build.SourcesDirectory)/src/ARM/AzureSecurityCenter/deploy.json --severity-threshold=medium --json-file-output=$(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.json --sarif-file-output=$(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.sarif
           if($LASTEXITCODE -eq 1){
             Write-Host "##vso[task.setvariable variable=snykTestPassed]false"
           }
+
+          mkdir CodeLogs && cd CodeLogs
+          mv $(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.sarif .
       continueOnError: true
 
     - task: Bash@3
@@ -48,6 +51,15 @@ stages:
       inputs:
         pathToPublish: '$(Build.SourcesDirectory)/HTML'
         artifactName: 'htmlReports'
+        publishLocation: 'Container'
+        parallel: true
+      condition: succeededOrFailed()
+
+    - task: PublishBuildArtifacts@1
+      displayName: Publish sarif to CodeAnalysisLogs
+      inputs:
+        pathToPublish: '$(Build.SourcesDirectory)/CodeLogs'
+        artifactName: 'CodeAnalysisLogs'
         publishLocation: 'Container'
         parallel: true
       condition: succeededOrFailed()
