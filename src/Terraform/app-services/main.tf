@@ -9,7 +9,7 @@ terraform {
   backend "azurerm" {
     storage_account_name = "jojosparkstg"
     container_name       = "tfstate"
-    key                  = "acr.tfstate"
+    key                  = "aas.tfstate"
     resource_group_name  = "spark-jojo-demo"
   }
 }
