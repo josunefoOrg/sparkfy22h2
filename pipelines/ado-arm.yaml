@@ -27,7 +27,7 @@ stages:
         script: |
           npm install -g snyk
           snyk auth --token $(SnykAPIConnection)
-          snyk iac test ./src/ARM/AzureSecurityCenter/deploy.json --severity-threshold=medium --json-file-output=$(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.json
+          snyk iac test $(Build.SourcesDirectory)/src/ARM/AzureSecurityCenter/deploy.json --severity-threshold=medium --json-file-output=$(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.json
           if($LASTEXITCODE -eq 1){
             Write-Host "##vso[task.setvariable variable=snykTestPassed]false"
           }
@@ -39,9 +39,9 @@ stages:
         workingDirectory: $(Build.SourcesDirectory)
         targetType: 'inline'
         script: |
-          mkdir HTML
+          mkdir HTML && cd HTML
           npm install -g snyk-to-html
-          snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.json -o $(Build.SourcesDirectory)/HTML/SnykReport-AzureSecurityCenter.html
+          snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.json -o SnykReport-AzureSecurityCenter.html
 
 
     - task: PublishBuildArtifacts@1
@@ -82,7 +82,7 @@ stages:
         csmParametersFile: '$(System.DefaultWorkingDirectory)/src/ARM/AzureSecurityCenter/Parameters/parameters.json'
         deploymentMode: 'Incremental'
         deploymentName: 'deploySecurityCenter'
-      condition: and(succeededOrFailed(), eq(variables['snykTestPassed'], false))
+      condition: and(succeededOrFailed(), eq(variables['snykTestPassed'], true))
 
     - task: Bash@3
       displayName: Run the backend workflow on GH
