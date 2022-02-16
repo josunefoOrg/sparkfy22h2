@@ -5,6 +5,9 @@ trigger:
 pool:
   vmImage: windows-2022
 
+variables:
+  snykTestPassed: false
+
 stages:
 - stage: Scan
   displayName: Scan vulnerabilities for ARM templates
@@ -16,7 +19,7 @@ stages:
     steps:
     - checkout: self
 
-    - task: Bash@3
+    - task: PowerShell@2
       displayName: Snyk-test-module
       inputs:
         workingDirectory: $(Build.SourcesDirectory)
@@ -25,7 +28,9 @@ stages:
           npm install -g snyk
           snyk auth --token $(SnykAPIConnection)
           snyk iac test ./src/ARM/AzureSecurityCenter/deploy.json --severity-threshold=medium --json-file-output=./SnykReport-AzureSecurityCenter.json
-
+          if($LASTEXITCODE -eq 1){
+            Write-Host "##vso[task.setvariable variable=snykTestPassed]true"
+          }
 
     - task: Bash@3
       displayName: Transform test to HTML
@@ -33,9 +38,9 @@ stages:
         workingDirectory: $(Build.SourcesDirectory)
         targetType: 'inline'
         script: |
-          mkdir HTML && cd HTML
+          mkdir HTML
           npm install -g snyk-to-html
-          snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.json -o SnykReport-AzureSecurityCenter.html
+          snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.json -o ./HTML/SnykReport-AzureSecurityCenter.html
       condition: always()
 
 
@@ -46,7 +51,9 @@ stages:
         artifactName: 'htmlReports'
         publishLocation: 'Container'
         parallel: true
+      condition: always()
 
+      
     - task: RunARMTTKTests@1
       inputs:
         templatelocation: '$(System.DefaultWorkingDirectory)/src/ARM/AzureSecurityCenter/deploy.json'
@@ -54,6 +61,7 @@ stages:
         skipTests: 'Parameters Must Be Referenced'
         allTemplatesMain: false
         cliOutputResults: true
+      condition: always()
 
     - task: PublishTestResults@2
       inputs:
@@ -74,6 +82,7 @@ stages:
         csmParametersFile: '$(System.DefaultWorkingDirectory)/src/ARM/AzureSecurityCenter/Parameters/parameters.json'
         deploymentMode: 'Incremental'
         deploymentName: 'deploySecurityCenter'
+      condition: succeeded(), eq(variables['snykTestPassed'], false))
 
     - task: Bash@3
       displayName: Run the backend workflow on GH
