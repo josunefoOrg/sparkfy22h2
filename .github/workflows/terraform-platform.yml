@@ -14,11 +14,7 @@ env:
 jobs:
   deploy_frontend_infra:
     runs-on: ubuntu-latest
-    # env:
-    #   ARM_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
-    #   ARM_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
-    #   ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-    #   ARM_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+
     steps:
       - uses: actions/checkout@v2
       - name: tflint acr
@@ -58,21 +54,14 @@ jobs:
         with:
           sarif_file: ./src/Terraform/container-registry/tfsec-container-registry.sarif
 
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
       - name: ACR TF Deployment
         if: steps.tflint-execution.outcome == 'success' && steps.tfsec-execution.outcome == 'success'
-        uses: azure/CLI@v1
-        with:
-          inlineScript: |
-            cd ./src/Terraform/container-registry
-            terraform init
-            terraform validate
-            terraform plan -out tfplan
-            terraform apply --auto-approve tfplan
+        working-directory: ./src/Terraform/container-registry
+        run: |
+          terraform init -backend-config="subscription_id=${{ secrets.ARM_SUBSCRIPTION_ID }}" -backend-config="client_id=${{ secrets.AZURE_AD_CLIENT_ID }}" -backend-config="client_secret=${{ secrets.AZURE_AD_CLIENT_SECRET }}" -backend-config="tenant_id=${{ secrets.AZURE_AD_TENANT_ID }}"
+          terraform validate
+          terraform plan -out tfplan
+          terraform apply --auto-approve tfplan
 
       - name: Build docker Tensorflow model
         working-directory: ./src/Docker
@@ -100,6 +89,11 @@ jobs:
           scan-results-path: ${{ steps.container-scan.outputs.scan-report-path }}
           connection-string: ${{ secrets.AZ_APPINSIGHTS_CONNECTION_STRING }}
           subscription-token: ${{ secrets.AZ_SUBSCRIPTION_TOKEN }}
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Push Docker image
         uses: azure/CLI@v1
