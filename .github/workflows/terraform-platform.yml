@@ -63,7 +63,12 @@ jobs:
         if: steps.tflint-execution.outcome == 'success' && steps.tfsec-execution.outcome == 'success'
         working-directory: ./src/Terraform/container-registry
         run: |
-          terraform init -backend-config="subscription_id=${{ secrets.ARM_SUBSCRIPTION_ID }}" -backend-config="client_id=${{ secrets.AZURE_AD_CLIENT_ID }}" -backend-config="client_secret=${{ secrets.AZURE_AD_CLIENT_SECRET }}" -backend-config="tenant_id=${{ secrets.AZURE_AD_TENANT_ID }}"
+          export ARM_CLIENT_ID="${{ secrets.AZURE_AD_CLIENT_ID }}"
+          export ARM_CLIENT_SECRET="${{ secrets.AZURE_AD_CLIENT_SECRET }}"
+          export ARM_SUBSCRIPTION_ID="${{ secrets.ARM_SUBSCRIPTION_ID }}"
+          export ARM_TENANT_ID="${{ secrets.AZURE_AD_TENANT_ID }}"
+          #terraform init -backend-config="subscription_id=${{ secrets.ARM_SUBSCRIPTION_ID }}" -backend-config="client_id=${{ secrets.AZURE_AD_CLIENT_ID }}" -backend-config="client_secret=${{ secrets.AZURE_AD_CLIENT_SECRET }}" -backend-config="tenant_id=${{ secrets.AZURE_AD_TENANT_ID }}"
+          terraform init
           terraform validate
           terraform plan -out tfplan
           terraform apply --auto-approve tfplan
