@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@master
 
       - name: Setup tflint AzureRM plugin
-        working-directory: ${{ github.workspace }}/src/Terraform/container-registry
+        working-directory: ${{ github.workspace }}/src/Terraform
         run: |
             echo 'plugin "azurerm" {' >.tflint.hcl
             echo '  enabled = true' >>.tflint.hcl
@@ -31,42 +31,22 @@ jobs:
             rm tflint-AzRuleset.zip
             chmod +x tflint-ruleset-azurerm
 
-      - name: tflint acr
+      - name: tflint
         uses: reviewdog/action-tflint@master
         with:
           github_token: ${{ github.token }}
-          working_directory: "src/Terraform/container-registry"
+          working_directory: "src/Terraform"
           reporter: github-pr-review
           fail_on_error: "true"
           tflint_version: "${{ env.tfLintVersion }}"
           tflint_rulesets: "azurerm"
           flags: "--module"
 
-      - name: tflint aas
-        uses: reviewdog/action-tflint@master
-        with:
-          github_token: ${{ github.token }}
-          working_directory: "src/Terraform/app-services"
-          reporter: github-pr-review
-          fail_on_error: "true"
-          tflint_version: "${{ env.tfLintVersion }}"
-          tflint_rulesets: "azurerm"
-          flags: "--module"
-
-      - name: tfsec acr
+      - name: tfsec
         uses: tfsec/tfsec-pr-commenter-action@main
         if: always()
         with:
           tfsec_args: --soft-fail
           tfsec_version: ${{ env.tfsecVersion }}
           github_token: ${{ github.token }}
-          working_directory: ./src/Terraform/container-registry
-
-      - name: tfsec aas
-        uses: tfsec/tfsec-pr-commenter-action@main
-        if: always()
-        with:
-          tfsec_args: --soft-fail
-          tfsec_version: ${{ env.tfsecVersion }}
-          github_token: ${{ github.token }}
-          working_directory: ./src/Terraform/app-services
+          working_directory: ./src/Terraform
