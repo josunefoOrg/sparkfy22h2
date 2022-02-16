@@ -91,7 +91,7 @@ jobs:
         id: container-scan
         continue-on-error: true
         with:
-          image-name: jojoacrspark.azurecr.io/jojoacrspark/${{ env.imageName }}:${{ github.run_number }}
+          image-name: ${{ env.imageName }}:${{ github.run_number }}
 
       - name: Post logs to appinsights
         uses: Azure/publish-security-assessments@v0
@@ -105,4 +105,6 @@ jobs:
         with:
           inlineScript: |
             az acr login -n jojoacrspark
+            
+            docker tag "${{ env.imageName }}:${{ github.run_number }}" "jojoacrspark.azurecr.io/jojoacrspark/${{ env.imageName }}:${{ github.run_number }}"
             docker push jojoacrspark.azurecr.io/jojoacrspark/${{ env.imageName }}:${{ github.run_number }}
