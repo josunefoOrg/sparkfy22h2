@@ -25,7 +25,6 @@ stages:
           npm install -g snyk
           snyk auth --token $(SnykAPIConnection)
           snyk iac test ./src/ARM/AzureSecurityCenter/deploy.json --severity-threshold=medium --json-file-output=./SnykReport-AzureSecurityCenter.json
-          write-host ">>> test completed"
 
 
     - task: Bash@3
@@ -37,7 +36,7 @@ stages:
           mkdir HTML && cd HTML
           npm install -g snyk-to-html
           snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.json -o SnykReport-AzureSecurityCenter.html
-          write-host ">>> HTML created"
+      condition: always()
 
 
     - task: PublishBuildArtifacts@1
@@ -55,7 +54,6 @@ stages:
         skipTests: 'Parameters Must Be Referenced'
         allTemplatesMain: false
         cliOutputResults: true
-      condition: always()
 
     - task: PublishTestResults@2
       inputs:
