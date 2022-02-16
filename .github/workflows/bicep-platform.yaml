@@ -9,9 +9,9 @@ on:
     - "src/Bicep/**"
 jobs:
   deploy_backend_infra:
-    environment: "Continuous Integration"
     runs-on: ubuntu-latest
     name: "Deploy backend - Bicep"
+    environment: Development
     steps:
       - name: "Checkout"
         uses: actions/checkout@v2
@@ -86,5 +86,6 @@ jobs:
 
   deploy_frontend_infra:
     name: "Deploy frontend - TF"
+    environment: Production
     needs: deploy_backend_infra
     uses: josunefoOrg/sparkfy22h2/.github/workflows/terraform-platform.yml@main
