@@ -75,7 +75,6 @@ stages:
         csmParametersFile: '$(System.DefaultWorkingDirectory)/src/ARM/AzureSecurityCenter/parameters/parameters.json'
         deploymentMode: 'Incremental'
         deploymentName: 'deploySecurityCenter'
-        deploymentOutputs: 'armOutput'
 
     - task: Bash@3
       displayName: Run the backend workflow on GH
