@@ -13,7 +13,7 @@ env:
 
 jobs:
   check_acr_vulns:
-    name: App Services assessment
+    name: Container Registry assessment
     runs-on: ubuntu-latest
     outputs:
       tfsecOutcome: ${{ steps.tfsec-execution-acr.outcome }}
