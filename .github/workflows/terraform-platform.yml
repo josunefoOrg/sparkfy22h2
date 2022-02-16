@@ -80,7 +80,6 @@ jobs:
           docker tag "${{ env.imageName }}:${{ github.run_number }}" "jojoacrspark.azurecr.io/jojoacrspark/${{ env.imageName }}:${{ github.run_number }}"
 
       - name: Run trivy scan the docker image
-        working-directory:
         run: |
             docker run \
             --rm -v /var/run/docker.sock:/var/run/docker.sock -v $HOME:/root/.cache/ ghcr.io/aquasecurity/trivy:latest image \
@@ -95,11 +94,8 @@ jobs:
           image-name: jojoacrspark.azurecr.io/jojoacrspark/${{ env.imageName }}:${{ github.run_number }}
 
       - name: Push Docker image
-        uses: azure/CLI@v1
-        with:
-          inlineScript: |
+        run: |
             az acr login -n jojoacrspark
-            
             docker push jojoacrspark.azurecr.io/jojoacrspark/${{ env.imageName }}:${{ github.run_number }}
 
       - name: Post logs to appinsights
