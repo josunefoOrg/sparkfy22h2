@@ -23,7 +23,7 @@ stages:
         script: |
           npm install snyk@latest -g
           snyk auth $(SnykAPIConnection)
-          snyk iac test ./src/ARM/AzureSecurityCenter/deploy.json --json-file-output=./SnykReport-AzureSecurityCenter.json
+          snyk iac test ./src/ARM/AzureSecurityCenter/deploy.json --severity-threshold=medium --json-file-output=./SnykReport-AzureSecurityCenter.json
           write-host ">>> test completed"
 
 
@@ -35,7 +35,7 @@ stages:
           mkdir HTML && cd HTML
           npm install snyk-to-html -g
           snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.json -o SnykReport-AzureSecurityCenter.html
-          write-host ">>> test completed"
+          write-host ">>> HTML created"
 
 
     - task: PublishBuildArtifacts@1
@@ -48,8 +48,8 @@ stages:
 
     - task: RunARMTTKTests@1
       inputs:
-        templatelocation: '$(System.DefaultWorkingDirectory)\src\ARM\AzureSecurityCenter\*'
-        resultLocation: '$(System.DefaultWorkingDirectory)\results'
+        templatelocation: '$(System.DefaultWorkingDirectory)/src/ARM/AzureSecurityCenter/deploy.json'
+        resultLocation: '$(System.DefaultWorkingDirectory)/results'
         skipTests: 'Parameters Must Be Referenced'
         allTemplatesMain: false
         cliOutputResults: true
@@ -58,7 +58,7 @@ stages:
     - task: PublishTestResults@2
       inputs:
         testResultsFormat: 'NUnit'
-        testResultsFiles: '$(System.DefaultWorkingDirectory)\results\*-armttk.xml'
+        testResultsFiles: '$(System.DefaultWorkingDirectory)/results/*-armttk.xml'
       condition: always()
 
     - task: AzureResourceManagerTemplateDeployment@3
@@ -72,7 +72,7 @@ stages:
         resourceGroupName: 'SPARKFY22H2-ARM'
         templateLocation: 'Linked artifact'
         csmFile: '$(System.DefaultWorkingDirectory)/src/ARM/AzureSecurityCenter/deploy.json'
-        csmParametersFile: '$(System.DefaultWorkingDirectory)/src/ARM/AzureSecurityCenter/parameters/parameters.json'
+        csmParametersFile: '$(System.DefaultWorkingDirectory)/src/ARM/AzureSecurityCenter/Parameters/parameters.json'
         deploymentMode: 'Incremental'
         deploymentName: 'deploySecurityCenter'
 

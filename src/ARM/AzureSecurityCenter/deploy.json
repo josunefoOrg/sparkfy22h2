@@ -165,7 +165,7 @@
             "apiVersion": "2018-06-01",
             "name": "AppServices",
             "properties": {
-                "pricingTier": "[parameters('appServicesPricingTier')]"
+                "pricingTier": "Standard"
             }
         },
         {
@@ -173,7 +173,7 @@
             "apiVersion": "2018-06-01",
             "name": "StorageAccounts",
             "properties": {
-                "pricingTier": "[parameters('storageAccountsPricingTier')]"
+                "pricingTier": "Free"
             }
         },
         {
@@ -181,7 +181,7 @@
             "apiVersion": "2018-06-01",
             "name": "ContainerRegistry",
             "properties": {
-                "pricingTier": "[parameters('containerRegistryPricingTier')]"
+                "pricingTier": "Standard"
             }
         },
         {
@@ -189,7 +189,7 @@
             "apiVersion": "2018-06-01",
             "name": "KeyVaults",
             "properties": {
-                "pricingTier": "[parameters('keyVaultsPricingTier')]"
+                "pricingTier": "Free"
             }
         }
     ],
