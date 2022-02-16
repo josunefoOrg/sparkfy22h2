@@ -72,8 +72,7 @@ jobs:
         run: |
           docker build -t ${{ env.imageName }}:${{ github.run_number }} -f Dockerfile .
 
-      - name: 
-        displayName: "Run trivy scan the docker image"
+      - name: Run trivy scan the docker image
         working-directory:
         run: |
             docker run \
