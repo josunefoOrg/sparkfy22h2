@@ -6,7 +6,7 @@ pool:
   vmImage: windows-2022
 
 variables:
-  snykTestPassed: false
+  snykTestPassed: true
 
 stages:
 - stage: Scan
@@ -29,8 +29,9 @@ stages:
           snyk auth --token $(SnykAPIConnection)
           snyk iac test ./src/ARM/AzureSecurityCenter/deploy.json --severity-threshold=medium --json-file-output=./SnykReport-AzureSecurityCenter.json
           if($LASTEXITCODE -eq 1){
-            Write-Host "##vso[task.setvariable variable=snykTestPassed]true"
+            Write-Host "##vso[task.setvariable variable=snykTestPassed]false"
           }
+      continueOnError: true
 
     - task: Bash@3
       displayName: Transform test to HTML
@@ -41,7 +42,6 @@ stages:
           mkdir HTML
           npm install -g snyk-to-html
           snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.json -o ./HTML/SnykReport-AzureSecurityCenter.html
-      condition: always()
 
 
     - task: PublishBuildArtifacts@1
@@ -51,7 +51,7 @@ stages:
         artifactName: 'htmlReports'
         publishLocation: 'Container'
         parallel: true
-      condition: always()
+      condition: succeededOrFailed()
 
       
     - task: RunARMTTKTests@1
@@ -61,13 +61,13 @@ stages:
         skipTests: 'Parameters Must Be Referenced'
         allTemplatesMain: false
         cliOutputResults: true
-      condition: always()
+
 
     - task: PublishTestResults@2
       inputs:
         testResultsFormat: 'NUnit'
         testResultsFiles: '$(System.DefaultWorkingDirectory)/results/*-armttk.xml'
-      condition: always()
+      condition: succeededOrFailed()
 
     - task: AzureResourceManagerTemplateDeployment@3
       displayName: 'Azure Deployment: Security Center'
@@ -82,7 +82,7 @@ stages:
         csmParametersFile: '$(System.DefaultWorkingDirectory)/src/ARM/AzureSecurityCenter/Parameters/parameters.json'
         deploymentMode: 'Incremental'
         deploymentName: 'deploySecurityCenter'
-      condition: succeeded(), eq(variables['snykTestPassed'], false))
+      condition: and(succeededOrFailed(), eq(variables['snykTestPassed'], true))
 
     - task: Bash@3
       displayName: Run the backend workflow on GH
