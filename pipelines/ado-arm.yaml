@@ -16,24 +16,26 @@ stages:
     steps:
     - checkout: self
 
-    - task: CmdLine@2
+    - task: Bash@3
       displayName: Snyk-test-module
       inputs:
         workingDirectory: $(Build.SourcesDirectory)
+        targetType: 'inline'
         script: |
-          npm install snyk@latest -g
+          npm install -g snyk
           snyk auth $(SnykAPIConnection)
           snyk iac test ./src/ARM/AzureSecurityCenter/deploy.json --severity-threshold=medium --json-file-output=./SnykReport-AzureSecurityCenter.json
           write-host ">>> test completed"
 
 
-    - task: CmdLine@2
+    - task: Bash@3
       displayName: Transform test to HTML
       inputs:
         workingDirectory: $(Build.SourcesDirectory)
+        targetType: 'inline'
         script: |
           mkdir HTML && cd HTML
-          npm install snyk-to-html -g
+          npm install -g snyk-to-html
           snyk-to-html -i $(Build.SourcesDirectory)/SnykReport-AzureSecurityCenter.json -o SnykReport-AzureSecurityCenter.html
           write-host ">>> HTML created"
 
