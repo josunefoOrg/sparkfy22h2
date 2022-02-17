@@ -13,11 +13,11 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+
       - name: Azure Login
-        uses: Azure/login@v1.4.3
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-          enable-AzPSSession: true
+        run: |
+          az login --service-principal -u "${{ secrets.AZURE_AD_CLIENT_ID }}" -p "${{ secrets.AZURE_AD_CLIENT_SECRET }}" --tenant "${{ secrets.AZURE_AD_TENANT_ID }}"
+          az account set -s "${{ secrets.ARM_SUBSCRIPTION_ID }}"
 
       - name: bicep-build - Key vault
         uses: Azure/bicep-build-action@v1.0.0
