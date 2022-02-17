@@ -1,4 +1,6 @@
-# AzureSecurityCenter
+# Welcome to the Spark demo :)
+
+## AzureSecurityCenter
 
 This template enables Azure Security Center - Standard tier by default, could be overridden.
 
@@ -25,13 +27,13 @@ This template enables Azure Security Center - Standard tier by default, could be
 | `kubernetesServicePricingTier` | string | Optional. The pricing tier value for KubernetesService. Azure Security Center is provided in two pricing tiers: free and standard, with the standard tier available with a trial period. The standard tier offers advanced security capabilities, while the free tier offers basic security features. - Free or Standard | Standard | System.Object[] |
 | `scope` | string | Required. All the VMs in this scope will send their security data to the mentioned workspace unless overridden by a setting with more specific scope. |  |  |
 | `securityContactProperties` | object | Optional. Security contact data |  |  |
-| `sqlServersPricingTier` | string | Optional. The pricing tier value for SqlServers. Azure Security Center is provided in two pricing tiers: free and standard, with the standard tier available with a trial period. The standard tier offers advanced security capabilities, while the free tier offers basic security features. - Free or Standard | Standard | System.Object[] |  
+| `sqlServersPricingTier` | string | Optional. The pricing tier value for SqlServers. Azure Security Center is provided in two pricing tiers: free and standard, with the standard tier available with a trial period. The standard tier offers advanced security capabilities, while the free tier offers basic security features. - Free or Standard | Standard | System.Object[] |
 | `sqlServerVirtualMachinesPricingTier` | string | Optional. The pricing tier value for SqlServerVirtualMachines. Azure Security Center is provided in two pricing tiers: free and standard, with the standard tier available with a trial period. The standard tier offers advanced security capabilities, while the free tier offers basic security features. - Free or Standard | Standard | System.Object[] |
 | `storageAccountsPricingTier` | string | Optional. The pricing tier value for StorageAccounts. Azure Security Center is provided in two pricing tiers: free and standard, with the standard tier available with a trial period. The standard tier offers advanced security capabilities, while the free tier offers basic security features. - Free or Standard | Standard | System.Object[] |
 | `virtualMachinesPricingTier` | string | Optional. The pricing tier value for VMs. Azure Security Center is provided in two pricing tiers: free and standard, with the standard tier available with a trial period. The standard tier offers advanced security capabilities, while the free tier offers basic security features. - Free or Standard | Standard | System.Object[] |
 | `keyVaultsPricingTier` | string | Optional. The pricing tier value for KeayVaults. Azure Security Center is provided in two pricing tiers: free and standard, with the standard tier available with a trial period. The standard tier offers advanced security capabilities, while the free tier offers basic security features. - Free or Standard | Standard | System.Object[] |
 | `dnsPricingTier` | string | Optional. The pricing tier value for DNS. Azure Security Center is provided in two pricing tiers: free and standard, with the standard tier available with a trial period. The standard tier offers advanced security capabilities, while the free tier offers basic security features. - Free or Standard | Standard | System.Object[] |
-| `armPricingTier` | string | Optional. The pricing tier value for ARM. Azure Security Center is provided in two pricing tiers: free and standard, with the standard tier available with a trial period. The standard tier offers advanced security capabilities, while the free tier offers basic security features. - Free or Standard | Standard | System.Object[] | 
+| `armPricingTier` | string | Optional. The pricing tier value for ARM. Azure Security Center is provided in two pricing tiers: free and standard, with the standard tier available with a trial period. The standard tier offers advanced security capabilities, while the free tier offers basic security features. - Free or Standard | Standard | System.Object[] |
 | `workspaceId` | string | Required. The full Azure ID of the workspace to save the data in. |  |  |
 
 ### Parameter Usage: `deviceSecurityGroupProperties`
