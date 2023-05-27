@@ -10,7 +10,7 @@ param roleAssignments array = [
   {
     roleDefinitionIdOrName: 'Storage Blob Data Contributor'
     principalIds: [
-      '0fb28633-cd4f-44cc-bfd0-672cad91a2e7'
+      'a992a400-18db-41da-940d-245741154a03'
     ]
   }
 ]
