@@ -156,8 +156,11 @@ jobs:
         uses: microsoft/security-devops-action@preview
         continue-on-error: true
         id: msdo
+        env:
+          GDN_TRIVY_ACTION: image
+          GDN_TRIVY_TARGET: "netcoreconf23acr.azurecr.io/netcoreconf23acr/${{ env.imageName }}:latest"
         with:
-          tools: trivy
+          tools: "trivy"
 
       # Upload alerts to the Security tab
       - name: Upload alerts to Security tab
