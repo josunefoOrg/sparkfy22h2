@@ -56,12 +56,12 @@ jobs:
           docker run --rm -v "${{ github.workspace }}/src/Terraform:/src" aquasec/tfsec:${{ env.tfsecVersion }} --format sarif /src/container-registry > ${{ github.workspace }}/src/Terraform/container-registry/tfsec-container-registry.sarif
 
       - name: Upload tflint SARIF file
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: ./src/Terraform/container-registry/tflint-container-registry.sarif
 
       - name: Upload tfsec SARIF file
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: ./src/Terraform/container-registry/tfsec-container-registry.sarif
 
@@ -102,12 +102,12 @@ jobs:
           docker run --rm -v "${{ github.workspace }}/src/Terraform:/src" aquasec/tfsec:${{ env.tfsecVersion }} --format sarif /src/app-services > ${{ github.workspace }}/src/Terraform/app-services/tfsec-app-services.sarif
 
       - name: Upload tflint aas SARIF file
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: ./src/Terraform/app-services/tflint-app-services.sarif
 
       - name: Upload tfsec aas SARIF file
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: ./src/Terraform/app-services/tfsec-app-services.sarif
 
