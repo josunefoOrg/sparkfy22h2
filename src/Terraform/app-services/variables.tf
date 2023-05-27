@@ -1,19 +1,19 @@
 variable "aasResourceName" {
   description = "Specifies the name of the Azure resource"
   type        = string
-  default     = "jojo-aas-spark"
+  default     = "netcoreconf-aas"
 }
 
 variable "aspResourceName" {
   description = "Specifies the name of the Azure resource"
   type        = string
-  default     = "jojo-asp-spark"
+  default     = "netcoreconf-asp"
 }
 
 variable "umiName" {
   description = "Specifies the name of the Azure resource"
   type        = string
-  default     = "jojo-umi-spark"
+  default     = "netcoreconf-umi"
 }
 
 variable "acrName" {
@@ -25,5 +25,5 @@ variable "acrName" {
 variable "resourceGroup" {
   description = "Resource group where the resource will be deployed"
   type        = string
-  default     = "spark-jojo-demo"
+  default     = "netcoreconf-demo"
 }
