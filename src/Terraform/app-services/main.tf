@@ -7,16 +7,16 @@ terraform {
     }
   }
   backend "azurerm" {
-    storage_account_name = "jojosparkstg"
+    storage_account_name = "dnetcoreconfstg"
     container_name       = "tfstate"
     key                  = "aas.tfstate"
-    resource_group_name  = "spark-jojo-demo"
+    resource_group_name  = "netcoreconf-demo"
   }
 }
 
 provider "azurerm" {
-  subscription_id = "ed29c799-3b06-4306-971a-202c3c2d29a9"
-  tenant_id       = "72f988bf-86f1-41af-91ab-2d7cd011db47"
+  subscription_id = "4572a41c-c128-4e47-bbbc-19d1a188492d"
+  tenant_id       = "16b3c013-d300-468d-ac64-7eda0820b6d3"
   features {}
 }
 
