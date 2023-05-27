@@ -1,6 +1,5 @@
-# #GlobalAzure '22
+# .NETCoreConf '23
 
-Hi Global Azure!!!
+Hi Malaga!!!
 
-![globalAzure](https://globalazure.es/image/GWAB/GlobalAzure2022LiveFromSpain-250.png#gh-light-mode-only)
-![globalAzuredark](https://raw.githubusercontent.com/scarmuega/choose-your-side/master/vader.svg?sanitize=true#gh-dark-mode-only)
+![NetCoreConf](https://pbs.twimg.com/profile_images/1029308092738097152/3EyIcA3n_400x400.jpg)
