@@ -1,6 +1,6 @@
 @maxLength(24)
 @description('Optional. Name of the Storage Account.')
-param name string = 'jojosparkstg'
+param name string = 'dnetcoreconfstg'
 
 @description('Optional. Location for all resources.')
 param location string = resourceGroup().location
@@ -74,7 +74,7 @@ param blobServices object = {
   containers: [
     {
       name: 'tfstate'
-      storageAccountName: 'jojosparkstg'
+      storageAccountName: 'dnetcoreconfstg'
     }
   ]
 }
