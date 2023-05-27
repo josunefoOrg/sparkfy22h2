@@ -1,7 +1,7 @@
 variable "acrResourceName" {
   description = "Specifies the name of the Azure resource"
   type        = string
-  default     = "jojoacrspark"
+  default     = "netcoreconf23acr"
 }
 
 variable "umiResourceName" {

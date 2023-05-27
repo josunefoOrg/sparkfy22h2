@@ -18,7 +18,7 @@ resource "azurerm_app_service" "aas" {
 
     always_on = "true"
 
-    linux_fx_version = "DOCKER|${var.acrName}.azurecr.io/jojoacrspark/sparkfy22ml:latest"
+    linux_fx_version = "DOCKER|${var.acrName}.azurecr.io/netcoreconf23acr/netcoreconf23ml:latest"
   }
 
   tags = local.tags

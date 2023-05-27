@@ -3,6 +3,10 @@ name: "Deploy backend and frontend workflow"
 on:
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   deploy_backend_infra:
     runs-on: ubuntu-latest
@@ -15,9 +19,11 @@ jobs:
           fetch-depth: 0
 
       - name: Azure Login
-        run: |
-          az login --service-principal -u "${{ secrets.AZURE_AD_CLIENT_ID }}" -p "${{ secrets.AZURE_AD_CLIENT_SECRET }}" --tenant "${{ secrets.AZURE_AD_TENANT_ID }}"
-          az account set -s "${{ secrets.ARM_SUBSCRIPTION_ID }}"
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_AD_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_AD_TENANT_ID }}
+          subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
 
       - name: bicep-build - Key vault
         uses: Azure/bicep-build-action@v1.0.0
@@ -67,27 +73,24 @@ jobs:
       - name: Deploy Key Vault
         uses: azure/arm-deploy@v1
         with:
-          subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
-          resourceGroupName: "spark-jojo-demo"
+          subscriptionId: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          resourceGroupName: "netcoreconf-demo"
           template: ./src/Bicep/vaults/deploy.bicep
           failOnStdErr: false
 
       - name: Deploy Storage Account
         uses: azure/arm-deploy@v1
         with:
-          subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
-          resourceGroupName: "spark-jojo-demo"
+          subscriptionId: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          resourceGroupName: "netcoreconf-demo"
           template: ./src/Bicep/storageAccounts/deploy.bicep
           failOnStdErr: false
 
   deploy_frontend_infra:
     name: "Deploy frontend - TF"
     needs: deploy_backend_infra
-    uses: josunefoOrg/sparkfy22h2/.github/workflows/terraform-platform.yml@main
+    uses: joselcaguilar/HardeningIaC/.github/workflows/terraform-platform.yml@main
     secrets:
-        AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
-        AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
-        AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
-        ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-        AZ_APPINSIGHTS_CONNECTION_STRING: ${{ secrets.AZ_APPINSIGHTS_CONNECTION_STRING }}
-        AZ_SUBSCRIPTION_TOKEN: ${{ secrets.AZ_SUBSCRIPTION_TOKEN }}
+      AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+      AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}

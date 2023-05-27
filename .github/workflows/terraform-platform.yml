@@ -2,19 +2,13 @@ name: "TF Template Workflow"
 
 on:
   workflow_call:
-      secrets:
-          AZURE_AD_CLIENT_ID:
-              required: true
-          AZURE_AD_CLIENT_SECRET:
-              required: true
-          AZURE_AD_TENANT_ID:
-              required: true
-          ARM_SUBSCRIPTION_ID:
-              required: true
-          AZ_APPINSIGHTS_CONNECTION_STRING:
-              required: true
-          AZ_SUBSCRIPTION_TOKEN:
-              required: true
+    secrets:
+      AZURE_AD_CLIENT_ID:
+        required: true
+      AZURE_AD_TENANT_ID:
+        required: true
+      ARM_SUBSCRIPTION_ID:
+        required: true
   workflow_dispatch:
 
 env:
@@ -22,7 +16,7 @@ env:
   tfLintAzureRulesVersion: v0.14.0
   tfLintVersion: v0.34.1
   tfsecVersion: v1.1.5
-  imageName: sparkfy22ml
+  imageName: netcoreconf23ml
 
 jobs:
   check_acr_vulns:
@@ -47,7 +41,7 @@ jobs:
           echo '}' >>.tflint.hcl
           mkdir -p .tflint.d/plugins
           cd .tflint.d/plugins
-          
+
           curl -L "https://github.com/terraform-linters/tflint-ruleset-azurerm/releases/download/${{ env.tfLintAzureRulesVersion }}/tflint-ruleset-azurerm_linux_amd64.zip" -o tflint-AzRuleset.zip
           unzip tflint-AzRuleset.zip
           rm tflint-AzRuleset.zip
@@ -93,7 +87,7 @@ jobs:
           echo '}' >>.tflint.hcl
           mkdir -p .tflint.d/plugins
           cd .tflint.d/plugins
-          
+
           curl -L "https://github.com/terraform-linters/tflint-ruleset-azurerm/releases/download/${{ env.tfLintAzureRulesVersion }}/tflint-ruleset-azurerm_linux_amd64.zip" -o tflint-AzRuleset.zip
           unzip tflint-AzRuleset.zip
           rm tflint-AzRuleset.zip
@@ -125,59 +119,62 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_AD_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_AD_TENANT_ID }}
+          subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+
       - name: ACR TF Deployment
         if: needs.check_acr_vulns.outputs.tfsecOutcome == 'success' && needs.check_acr_vulns.outputs.tflintOutcome == 'success'
         working-directory: ./src/Terraform/container-registry
         run: |
-          az login --service-principal -u "${{ secrets.AZURE_AD_CLIENT_ID }}" -p "${{ secrets.AZURE_AD_CLIENT_SECRET }}" --tenant "${{ secrets.AZURE_AD_TENANT_ID }}"
-          az account set -s "${{ secrets.ARM_SUBSCRIPTION_ID }}"
-
-          export ARM_CLIENT_ID="${{ secrets.AZURE_AD_CLIENT_ID }}"
-          export ARM_CLIENT_SECRET="${{ secrets.AZURE_AD_CLIENT_SECRET }}"
-          export ARM_SUBSCRIPTION_ID="${{ secrets.ARM_SUBSCRIPTION_ID }}"
-          export ARM_TENANT_ID="${{ secrets.AZURE_AD_TENANT_ID }}"
-          
           terraform init
           terraform validate
           terraform plan -out tfplan
           terraform apply --auto-approve tfplan
+        env:
+          ARM_CLIENT_ID: ${{ env.AZURE_AD_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ env.ARM_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ env.ARM_SUBSCRIPTION_ID }}
+          ARM_USE_OIDC: true
 
       - name: Build docker Tensorflow model
         working-directory: ./src/Docker
         run: |
           docker build -t ${{ env.imageName }}:${{ github.run_number }} -f Dockerfile .
-          docker tag "${{ env.imageName }}:${{ github.run_number }}" "jojoacrspark.azurecr.io/jojoacrspark/${{ env.imageName }}:latest"
+          docker tag "${{ env.imageName }}:${{ github.run_number }}" "netcoreconf23acr.azurecr.io/netcoreconf23acr/${{ env.imageName }}:latest"
 
-      - uses: Azure/container-scan@v0 
-        name: Scan image with Defender
-        id: container-scan
+      # Run analyzers
+      - name: Run Microsoft Security DevOps Analysis
+        uses: microsoft/security-devops-action@preview
         continue-on-error: true
+        id: msdo
         with:
-          image-name: jojoacrspark.azurecr.io/jojoacrspark/${{ env.imageName }}:latest
+          tools: trivy
+
+      # Upload alerts to the Security tab
+      - name: Upload alerts to Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: ${{ steps.msdo.outputs.sarifFile }}
 
       - name: Push Docker image
         run: |
-            az acr login -n jojoacrspark
-            docker push jojoacrspark.azurecr.io/jojoacrspark/${{ env.imageName }}:latest
-
-      - name: Post logs to appinsights
-        uses: Azure/publish-security-assessments@v0
-        with:
-          artifact-type: containerImage
-          scan-results-path: ${{ steps.container-scan.outputs.scan-report-path }}
-          connection-string: ${{ secrets.AZ_APPINSIGHTS_CONNECTION_STRING }}
-          subscription-token: ${{ secrets.AZ_SUBSCRIPTION_TOKEN }}
+          az acr login -n netcoreconf23acr
+          docker push netcoreconf23acr.azurecr.io/netcoreconf23acr/${{ env.imageName }}:latest
 
       - name: App Services TF Deployment
         if: needs.check_aas_vulns.outputs.tfsecOutcome != 'success' && needs.check_aas_vulns.outputs.tflintOutcome == 'success' # skipping tfsec for demo purposes
         working-directory: ./src/Terraform/app-services
         run: |
-          export ARM_CLIENT_ID="${{ secrets.AZURE_AD_CLIENT_ID }}"
-          export ARM_CLIENT_SECRET="${{ secrets.AZURE_AD_CLIENT_SECRET }}"
-          export ARM_SUBSCRIPTION_ID="${{ secrets.ARM_SUBSCRIPTION_ID }}"
-          export ARM_TENANT_ID="${{ secrets.AZURE_AD_TENANT_ID }}"
-          
           terraform init
           terraform validate
           terraform plan -out tfplan
           terraform apply --auto-approve tfplan
+        env:
+          ARM_CLIENT_ID: ${{ env.AZURE_AD_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ env.ARM_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ env.ARM_SUBSCRIPTION_ID }}
+          ARM_USE_OIDC: true
