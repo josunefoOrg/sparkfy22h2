@@ -82,7 +82,7 @@ stages:
       displayName: 'Azure Deployment: Security Center'
       inputs:
         deploymentScope: 'Subscription'
-        azureResourceManagerConnection: 'JordiSubConn'
+        azureResourceManagerConnection: 'JoseNPDSubConn'
         subscriptionId: 'ed29c799-3b06-4306-971a-202c3c2d29a9'
         action: 'Create Or Update Resource Group'
         location: 'westeurope'
@@ -100,5 +100,5 @@ stages:
         script: |
           echo $(GH_PAT) > pat.txt
           gh auth login --with-token < pat.txt
-          gh workflow run "Deploy backend and frontend workflow" --repo "josunefoOrg/sparkfy22h2" --ref main
+          gh workflow run "Deploy backend and frontend workflow" --repo "joselcaguilar/HardeningIaC" --ref main
           rm pat.txt
